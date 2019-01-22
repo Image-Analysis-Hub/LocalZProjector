@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>org.scijava</groupId>
+		<artifactId>pom-scijava</artifactId>
+		<version>24.2.0</version>
+		<relativePath />
+	</parent>
+
+	<artifactId>LocalZProjector</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<name>plugins/LocalZProjector_.jar</name>
+	<description>A Fiji tool to perform local Z projection.</description>
+	<url>http://imagej.net/Welcome</url>
+	<inceptionYear>2019</inceptionYear>
+	<organization>
+		<name>IAH / C2RT / Institut Pasteur</name>
+		<url>research.pasteur.fr/en/team/image-analysis-hub/</url>
+	</organization>
+	<licenses>
+		<license>
+			<name>BSD 3-Clause License</name>
+			<url>https://opensource.org/licenses/BSD-3-Clause</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
+
+	<properties>
+		<!-- Target Fiji dir for clean upload. -->
+		<imagej.app.directory>../Fiji.app/</imagej.app.directory>
+		<license.licenseName>bsd_v3</license.licenseName>
+		<license.copyrightOwners>IAH developers.</license.copyrightOwners>
+		<license.projectName>Image Analysis Hub support for Life Scientists.</license.projectName>
+	</properties>
+
+	<dependencies>
+		<!-- ImageJ dependencies -->
+		<dependency>
+			<groupId>net.imagej</groupId>
+			<artifactId>ij</artifactId>
+		</dependency>
+
+		<!-- ImgLib2 dependencies -->
+		<dependency>
+			<groupId>net.imglib2</groupId>
+			<artifactId>imglib2</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>net.imglib2</groupId>
+			<artifactId>imglib2-algorithm</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>net.imglib2</groupId>
+			<artifactId>imglib2-realtransform</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+
+	<developers>
+		<developer>
+			<id>tinevez</id>
+			<name>Jean-Yves Tinevez</name>
+			<email>jean-yves.tinevez@pasteur.fr</email>
+			<url>http://citech.pasteur.fr/member/jean-yves-tinevez/</url>
+			<organization>Institut Pasteur</organization>
+			<organizationUrl>http://www.pasteur.fr/</organizationUrl>
+			<roles>
+				<role>founder</role>
+				<role>lead</role>
+				<role>developer</role>
+				<role>debugger</role>
+				<role>reviewer</role>
+				<role>support</role>
+				<role>maintainer</role>
+			</roles>
+			<timezone>+1</timezone>
+		</developer>
+	</developers>
+	<contributors>
+		<contributor>
+			<name>none</name>
+		</contributor>
+	</contributors>
+
+	<mailingLists>
+		<mailingList>
+			<name>ImageJ Forum</name>
+			<archive>http://forum.imagej.net/</archive>
+		</mailingList>
+	</mailingLists>
+
+	<scm>
+		<connection>scm:git:git://gitlab.pasteur.fr/iah/LocalZProjector</connection>
+		<developerConnection>scm:git:git@gitlab.pasteur.fr:iah/LocalZProjector</developerConnection>
+		<tag>HEAD</tag>
+		<url>https://gitlab.pasteur.fr/iah/LocalZProjector</url>
+	</scm>
+	<issueManagement>
+		<system>GitLab Issues</system>
+		<url>https://gitlab.pasteur.fr/iah/LocalZProjector/issues</url>
+	</issueManagement>
+	<ciManagement>
+		<system>none</system>
+	</ciManagement>
+	<repositories>
+		<repository>
+			<id>imagej.public</id>
+			<url>http://maven.imagej.net/content/groups/public</url>
+		</repository>
+	</repositories>
+
+</project>
