@@ -18,7 +18,7 @@
 	<inceptionYear>2019</inceptionYear>
 	<organization>
 		<name>IAH / C2RT / Institut Pasteur</name>
-		<url>research.pasteur.fr/en/team/image-analysis-hub/</url>
+		<url>https://research.pasteur.fr/en/team/image-analysis-hub/</url>
 	</organization>
 	<licenses>
 		<license>
@@ -62,6 +62,26 @@
 			<artifactId>junit</artifactId>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+			<groupId>net.imagej</groupId>
+			<artifactId>imagej-ops</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>net.imagej</groupId>
+			<artifactId>imagej</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>net.imagej</groupId>
+			<artifactId>imagej-legacy</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>net.imglib2</groupId>
+			<artifactId>imglib2-roi</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-math3</artifactId>
+		</dependency>
 	</dependencies>
 
 	<developers>
@@ -69,7 +89,7 @@
 			<id>tinevez</id>
 			<name>Jean-Yves Tinevez</name>
 			<email>jean-yves.tinevez@pasteur.fr</email>
-			<url>http://citech.pasteur.fr/member/jean-yves-tinevez/</url>
+			<url>https://research.pasteur.fr/en/member/jean-yves-tinevez/</url>
 			<organization>Institut Pasteur</organization>
 			<organizationUrl>http://www.pasteur.fr/</organizationUrl>
 			<roles>
