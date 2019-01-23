@@ -6,9 +6,9 @@ import java.util.Locale;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 
-import fr.pasteur.iah.localzprojector.process.ExtractSurfaceOp;
-import fr.pasteur.iah.localzprojector.process.ExtractSurfaceParameters;
-import fr.pasteur.iah.localzprojector.process.ExtractSurfaceParameters.ProjectionMethod;
+import fr.pasteur.iah.localzprojector.process.LocalProjectionOp;
+import fr.pasteur.iah.localzprojector.process.LocalProjectionParameters;
+import fr.pasteur.iah.localzprojector.process.LocalProjectionParameters.ProjectionMethod;
 import fr.pasteur.iah.localzprojector.process.ReferenceSurfaceOp;
 import fr.pasteur.iah.localzprojector.process.ReferenceSurfaceParameters;
 import fr.pasteur.iah.localzprojector.process.ReferenceSurfaceParameters.Method;
@@ -39,7 +39,7 @@ public class TestDrive
 				.medianPostFilterHalfSize( 20 )
 				.get();
 
-		final ExtractSurfaceParameters params2 = ExtractSurfaceParameters.create()
+		final LocalProjectionParameters params2 = LocalProjectionParameters.create()
 				.zOffset( 0, +8 )
 				.zOffset( 1, 0 )
 				.deltaZ( 0, 3 )
@@ -79,7 +79,7 @@ public class TestDrive
 		// Extract surface.
 
 		@SuppressWarnings( { "unchecked", "rawtypes" } )
-		final ExtractSurfaceOp< T > op2 = ( ExtractSurfaceOp ) Functions.binary( ij.op(), ExtractSurfaceOp.class, Dataset.class, dataset, referenceSurface, params2 );
+		final LocalProjectionOp< T > op2 = ( LocalProjectionOp ) Functions.binary( ij.op(), LocalProjectionOp.class, Dataset.class, dataset, referenceSurface, params2 );
 		final Dataset surface = op2.calculate( dataset, referenceSurface );
 
 		ij.ui().show( surface );

@@ -25,12 +25,12 @@ import net.imglib2.util.Util;
 import net.imglib2.view.IntervalView;
 import net.imglib2.view.Views;
 
-@Plugin( type = ExtractSurfaceOp.class )
-public class ExtractSurfaceOp< T extends RealType< T > & NativeType< T > > extends AbstractBinaryFunctionOp< Dataset, RandomAccessibleInterval< IntType >, Dataset > implements Cancelable
+@Plugin( type = LocalProjectionOp.class )
+public class LocalProjectionOp< T extends RealType< T > & NativeType< T > > extends AbstractBinaryFunctionOp< Dataset, RandomAccessibleInterval< IntType >, Dataset > implements Cancelable
 {
 
 	@Parameter
-	private ExtractSurfaceParameters params;
+	private LocalProjectionParameters params;
 
 	@Parameter
 	private OpService ops;
