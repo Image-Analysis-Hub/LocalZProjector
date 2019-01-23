@@ -15,8 +15,11 @@ public class ReferenceSurfaceParameters
 
 	public final int medianHalfSize;
 
-	private ReferenceSurfaceParameters( final Method method, final int halfWindowSize, final int zMin, final int zMax, final double sigma, final int medianSize )
+	public final int targetChannel;
+
+	private ReferenceSurfaceParameters( final int targetChannel, final Method method, final int halfWindowSize, final int zMin, final int zMax, final double sigma, final int medianSize )
 	{
+		this.targetChannel = targetChannel;
 		this.method = method;
 		this.halfWindowSize = halfWindowSize;
 		this.zMin = zMin;
@@ -28,8 +31,8 @@ public class ReferenceSurfaceParameters
 	public enum Method
 	{
 
-		MAX_OF_MEAN( "Maximum of mean" ),
-		MAX_OF_STD( "Maximum of std" );
+		MAX_OF_MEAN( "Max of mean" ),
+		MAX_OF_STD( "Max of std" );
 
 		private final String str;
 
@@ -68,6 +71,8 @@ public class ReferenceSurfaceParameters
 
 		private int medianHalfSize = -1;
 
+		private int targetChannel = 0;
+
 		public Builder method( final Method method )
 		{
 			this.method = method;
@@ -104,9 +109,16 @@ public class ReferenceSurfaceParameters
 			return this;
 		}
 
+		public Builder targetChannel( final int targetChannel )
+		{
+			this.targetChannel = targetChannel;
+			return this;
+		}
+
 		public ReferenceSurfaceParameters get()
 		{
 			return new ReferenceSurfaceParameters(
+					targetChannel,
 					method,
 					halfWindowSize,
 					Math.min( zMin, zMax ),
