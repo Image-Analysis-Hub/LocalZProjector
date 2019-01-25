@@ -31,11 +31,11 @@ public class TargetImagePanel extends JPanel
 		final GridBagLayout gridBagLayout = new GridBagLayout();
 		gridBagLayout.columnWidths = new int[] { 114, 44, 0 };
 		gridBagLayout.rowHeights = new int[] { 0, 0, 0, 0, 0, 0, 0 };
-		gridBagLayout.columnWeights = new double[] { 0.0, 0.0, Double.MIN_VALUE };
+		gridBagLayout.columnWeights = new double[] { 0., 1.0, Double.MIN_VALUE };
 		gridBagLayout.rowWeights = new double[] { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE };
 		setLayout( gridBagLayout );
 
-		final JLabel lblTargetImage = new JLabel( "Target image." );
+		final JLabel lblTargetImage = new JLabel( "Target image.", JLabel.CENTER );
 		lblTargetImage.setFont( lblTargetImage.getFont().deriveFont( lblTargetImage.getFont().getSize() + 4f ) );
 		final GridBagConstraints c = new GridBagConstraints();
 		c.gridwidth = 2;
