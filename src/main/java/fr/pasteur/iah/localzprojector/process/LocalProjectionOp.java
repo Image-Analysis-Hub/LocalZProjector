@@ -5,8 +5,6 @@ import org.scijava.Cancelable;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 
-import net.imagej.Dataset;
-import net.imagej.DefaultDataset;
 import net.imagej.ImgPlus;
 import net.imagej.axis.Axes;
 import net.imagej.ops.OpService;
@@ -26,7 +24,7 @@ import net.imglib2.view.IntervalView;
 import net.imglib2.view.Views;
 
 @Plugin( type = LocalProjectionOp.class )
-public class LocalProjectionOp< T extends RealType< T > & NativeType< T > > extends AbstractBinaryFunctionOp< Dataset, RandomAccessibleInterval< IntType >, Dataset > implements Cancelable
+public class LocalProjectionOp< T extends RealType< T > & NativeType< T > > extends AbstractBinaryFunctionOp< ImgPlus< T >, RandomAccessibleInterval< IntType >, ImgPlus< T > > implements Cancelable
 {
 
 	@Parameter
@@ -38,14 +36,13 @@ public class LocalProjectionOp< T extends RealType< T > & NativeType< T > > exte
 	private String cancelReason;
 
 	@Override
-	public Dataset calculate( final Dataset source, final RandomAccessibleInterval< IntType > referenceSurface )
+	public ImgPlus< T > calculate( final ImgPlus< T > source, final RandomAccessibleInterval< IntType > referenceSurface )
 	{
 		// Prepare.
 		cancelReason = null;
 
 		// Create output.
-		@SuppressWarnings( "unchecked" )
-		final Img< T > img = ( Img< T > ) source.getImgPlus().getImg();
+		final Img< T > img = source.getImg();
 
 
 		final int channelAxis = source.dimensionIndex( Axes.CHANNEL );
@@ -65,7 +62,7 @@ public class LocalProjectionOp< T extends RealType< T > & NativeType< T > > exte
 			final ImgPlus< T > imgPlus = new ImgPlus<>( output, "Local projection of " + source.getName(),
 					source.axis( 0 ),
 					source.axis( 1 ) );
-			return new DefaultDataset( ops.context(), imgPlus );
+			return imgPlus;
 		}
 		else
 		{
@@ -96,7 +93,7 @@ public class LocalProjectionOp< T extends RealType< T > & NativeType< T > > exte
 					source.axis( 0 ),
 					source.axis( 0 ),
 					source.axis( channelAxis ) );
-			return new DefaultDataset( ops.context(), imgPlus );
+			return imgPlus;
 		}
 	}
 

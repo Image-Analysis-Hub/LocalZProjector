@@ -6,14 +6,15 @@ import java.util.Locale;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 
-import fr.pasteur.iah.localzprojector.process.LocalProjectionOp;
 import fr.pasteur.iah.localzprojector.process.LocalProjectionParameters;
 import fr.pasteur.iah.localzprojector.process.LocalProjectionParameters.ProjectionMethod;
+import fr.pasteur.iah.localzprojector.process.LocalProjectionOp;
 import fr.pasteur.iah.localzprojector.process.ReferenceSurfaceOp;
 import fr.pasteur.iah.localzprojector.process.ReferenceSurfaceParameters;
 import fr.pasteur.iah.localzprojector.process.ReferenceSurfaceParameters.Method;
 import net.imagej.Dataset;
 import net.imagej.ImageJ;
+import net.imagej.ImgPlus;
 import net.imagej.axis.Axes;
 import net.imagej.ops.special.function.Functions;
 import net.imglib2.RandomAccessibleInterval;
@@ -80,7 +81,8 @@ public class TestDrive
 
 		@SuppressWarnings( { "unchecked", "rawtypes" } )
 		final LocalProjectionOp< T > op2 = ( LocalProjectionOp ) Functions.binary( ij.op(), LocalProjectionOp.class, Dataset.class, dataset, referenceSurface, params2 );
-		final Dataset surface = op2.calculate( dataset, referenceSurface );
+		@SuppressWarnings( "unchecked" )
+		final ImgPlus< T > surface = op2.calculate( ( ImgPlus< T > ) dataset.getImgPlus(), referenceSurface );
 
 		ij.ui().show( surface );
 	}
