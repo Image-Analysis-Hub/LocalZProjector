@@ -4,19 +4,17 @@ import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
-import java.util.Locale;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSeparator;
 import javax.swing.SwingConstants;
-import javax.swing.UIManager;
-import javax.swing.UnsupportedLookAndFeelException;
 
+import fr.pasteur.iah.localzprojector.process.LocalProjectionParameters;
+import fr.pasteur.iah.localzprojector.process.ReferenceSurfaceParameters;
 import net.imagej.Dataset;
-import net.imagej.ImageJ;
 
 public class GuiPanel extends JPanel
 {
@@ -29,9 +27,37 @@ public class GuiPanel extends JPanel
 
 	private final TargetImagePanel targetImagePanel;
 
-	public GuiPanel( final Supplier< Dataset > datasetSupplier )
+	private final RunPanel runPanel;
+
+	private Dataset dataset;
+
+	/**
+	 * Creates the GUI panel.
+	 * 
+	 * @param datasetSupplier
+	 *            supplier that returns the currently selected {@link Dataset}.
+	 * @param previewReferencePlaneRunner
+	 *            function to run when the 'Preview reference plane' button is
+	 *            pressed.
+	 * @param previewLocalProjectionRunner
+	 *            function to run when the 'Preview local projection' button is
+	 *            pressed. The boolean returned is <code>true</code> if the
+	 *            checkbox 'Display reference plane' is checked.
+	 * @param localProjectionRunner
+	 *            function to run when the 'Local projection' button is pressed.
+	 *            The boolean returned is <code>true</code> if the checkbox
+	 *            'Display reference plane' is checked.
+	 * @param stopper
+	 *            function to run with the 'Stop' button is pressed.
+	 */
+	public GuiPanel( 
+			final Supplier< Dataset > datasetSupplier,
+			final Runnable previewReferencePlaneRunner,
+			final Consumer< Boolean > previewLocalProjectionRunner,
+			final Consumer< Boolean > localProjectionRunner,
+			final Runnable stopper )
 	{
-		setPreferredSize( new Dimension( 400, 1000 ) );
+		setPreferredSize( new Dimension( 500, 1100 ) );
 
 		final GridBagLayout gridBagLayout = new GridBagLayout();
 		gridBagLayout.columnWeights = new double[] { 1. };
@@ -86,18 +112,33 @@ public class GuiPanel extends JPanel
 		 */
 
 		c.gridy += 4;
+		c.anchor = GridBagConstraints.SOUTH;
+		add( new JSeparator(), c );
+
+		c.gridy++;
 		c.fill = GridBagConstraints.BOTH;
-		add( new JPanel(), c );
+		this.runPanel = new RunPanel();
+		add( runPanel, c );
 
 		/*
 		 * Check
 		 */
 
 		refreshDataset( datasetSupplier.get() );
+		
+		/*
+		 * Wire listeners.
+		 */
+		
+		runPanel.btnPreviewReferencePlane.addActionListener( l -> previewReferencePlaneRunner.run() );
+		runPanel.btnPreviewLocalProjection.addActionListener( l -> previewLocalProjectionRunner.accept( runPanel.showReferencePlanePreview() ) );
+		runPanel.btnRun.addActionListener( l -> localProjectionRunner.accept( runPanel.showReferencePlaneMovie() ) );
+		runPanel.btnStop.addActionListener( l -> stopper.run() );
 	}
 
 	private void refreshDataset( final Dataset dataset )
 	{
+		this.dataset = dataset;
 		if ( null != referenceSurfacePanel )
 			remove( referenceSurfacePanel );
 		if ( null != localProjectionPanel )
@@ -150,20 +191,22 @@ public class GuiPanel extends JPanel
 		repaint();
 	}
 
-	public static void main( final String[] args ) throws ClassNotFoundException, InstantiationException, IllegalAccessException, UnsupportedLookAndFeelException
+	public ReferenceSurfaceParameters getReferenceSurfaceParameters()
 	{
-		Locale.setDefault( Locale.ROOT );
-		UIManager.setLookAndFeel( UIManager.getSystemLookAndFeelClassName() );
-
-		final ImageJ ij = new ImageJ();
-		ij.launch( args );
-
-		final Supplier< Dataset > datasetSupplier = () -> ij.imageDisplay().getActiveDataset();
-
-		final JFrame frame = new JFrame();
-		frame.getContentPane().add( new GuiPanel( datasetSupplier ) );
-		frame.pack();
-		frame.setVisible( true );
+		if ( null == referenceSurfacePanel )
+			return null;
+		return referenceSurfacePanel.getParameters();
 	}
 
+	public LocalProjectionParameters getLocalProjectionParameters()
+	{
+		if ( null == localProjectionPanel )
+			return null;
+		return localProjectionPanel.getParameters();
+	}
+
+	public Dataset getSelectedDataset()
+	{
+		return dataset;
+	}
 }
