@@ -18,10 +18,10 @@ import javax.swing.JScrollPane;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 
-import fr.pasteur.iah.localzprojector.process.LocalProjectionParameters;
-import fr.pasteur.iah.localzprojector.process.LocalProjectionParameters.Builder;
+import fr.pasteur.iah.localzprojector.process.ExtractSurfaceParameters;
+import fr.pasteur.iah.localzprojector.process.ExtractSurfaceParameters.Builder;
 
-public class LocalProjectionPanel extends JPanel
+public class ExtractSurfacePanel extends JPanel
 {
 
 	private static final long serialVersionUID = 1L;
@@ -30,9 +30,9 @@ public class LocalProjectionPanel extends JPanel
 
 	private final static ImageIcon SAVE_ICON = new ImageIcon( ReferenceSurfacePanel.class.getResource( "page_save.png" ) );
 
-	private final List< LocalProjectionChannelPanel > channels;
+	private final List< ExtractSurfaceChannelPanel > channels;
 
-	public LocalProjectionPanel( final int nChannels, final int nZSlices )
+	public ExtractSurfacePanel( final int nChannels, final int nZSlices )
 	{
 		final GridBagLayout gridBagLayout = new GridBagLayout();
 		gridBagLayout.columnWeights = new double[] { 1. };
@@ -46,7 +46,7 @@ public class LocalProjectionPanel extends JPanel
 		c.gridx = 0;
 		c.gridy = 0;
 
-		final JLabel lblLocalProjection = new JLabel( "Local projection." );
+		final JLabel lblLocalProjection = new JLabel( "Extract surface." );
 		lblLocalProjection.setHorizontalAlignment( JLabel.CENTER );
 		lblLocalProjection.setFont( lblLocalProjection.getFont().deriveFont( lblLocalProjection.getFont().getSize() + 4f ) );
 		add( lblLocalProjection, c );
@@ -60,7 +60,7 @@ public class LocalProjectionPanel extends JPanel
 		c.gridy++;
 		c.fill = GridBagConstraints.BOTH;
 		add( scrollPane, c );
-		
+
 		final JPanel panelButtons = new JPanel();
 		c.gridy++;
 		c.gridy++;
@@ -81,25 +81,25 @@ public class LocalProjectionPanel extends JPanel
 		for ( int channel = 0; channel < nChannels; channel++ )
 		{
 			panelChannels.add( Box.createHorizontalStrut( 5 ) );
-			final LocalProjectionChannelPanel ci = new LocalProjectionChannelPanel( channel, nZSlices );
+			final ExtractSurfaceChannelPanel ci = new ExtractSurfaceChannelPanel( channel, nZSlices );
 			channels.add( ci );
 			panelChannels.add( ci );
 			panelChannels.add( Box.createHorizontalStrut( 5 ) );
 		}
 	}
 
-	public LocalProjectionParameters getParameters()
+	public ExtractSurfaceParameters getParameters()
 	{
-		final Builder builder = LocalProjectionParameters.create();
-		for ( final LocalProjectionChannelPanel channel : channels )
+		final Builder builder = ExtractSurfaceParameters.create();
+		for ( final ExtractSurfaceChannelPanel channel : channels )
 			channel.update( builder );
 
 		return builder.get();
 	}
 
-	public void setParameters( final LocalProjectionParameters params )
+	public void setParameters( final ExtractSurfaceParameters params )
 	{
-		for ( final LocalProjectionChannelPanel channel : channels )
+		for ( final ExtractSurfaceChannelPanel channel : channels )
 			channel.setParameters( params );
 	}
 
@@ -108,7 +108,7 @@ public class LocalProjectionPanel extends JPanel
 		Locale.setDefault( Locale.ROOT );
 		UIManager.setLookAndFeel( UIManager.getSystemLookAndFeelClassName() );
 		final JFrame frame = new JFrame();
-		frame.getContentPane().add( new LocalProjectionPanel( 3, 41 ) );
+		frame.getContentPane().add( new ExtractSurfacePanel( 3, 41 ) );
 		frame.pack();
 		frame.setVisible( true );
 	}

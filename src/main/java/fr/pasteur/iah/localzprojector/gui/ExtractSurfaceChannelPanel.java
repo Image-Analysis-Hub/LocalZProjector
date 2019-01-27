@@ -13,11 +13,11 @@ import javax.swing.SpinnerNumberModel;
 import javax.swing.border.LineBorder;
 import javax.swing.border.TitledBorder;
 
-import fr.pasteur.iah.localzprojector.process.LocalProjectionParameters;
-import fr.pasteur.iah.localzprojector.process.LocalProjectionParameters.Builder;
-import fr.pasteur.iah.localzprojector.process.LocalProjectionParameters.ProjectionMethod;
+import fr.pasteur.iah.localzprojector.process.ExtractSurfaceParameters;
+import fr.pasteur.iah.localzprojector.process.ExtractSurfaceParameters.Builder;
+import fr.pasteur.iah.localzprojector.process.ExtractSurfaceParameters.ProjectionMethod;
 
-public class LocalProjectionChannelPanel extends JPanel
+public class ExtractSurfaceChannelPanel extends JPanel
 {
 
 	private static final long serialVersionUID = 1L;
@@ -30,7 +30,7 @@ public class LocalProjectionChannelPanel extends JPanel
 
 	private final int channel;
 
-	public LocalProjectionChannelPanel( final int channel, final int nZSlices )
+	public ExtractSurfaceChannelPanel( final int channel, final int nZSlices )
 	{
 		this.channel = channel;
 		setBorder( new TitledBorder( new LineBorder( new Color( 192, 192, 192 ), 1, true ), "Ch" + channel, TitledBorder.LEADING, TitledBorder.TOP, null, null ) );
@@ -75,7 +75,7 @@ public class LocalProjectionChannelPanel extends JPanel
 		return builder;
 	}
 
-	public void setParameters( final LocalProjectionParameters params )
+	public void setParameters( final ExtractSurfaceParameters params )
 	{
 		comboBoxMethod.setSelectedItem( params.projectionMethod( channel ) );
 		spinnerModelOffset.setValue( Integer.valueOf( params.offset( channel ) ) );

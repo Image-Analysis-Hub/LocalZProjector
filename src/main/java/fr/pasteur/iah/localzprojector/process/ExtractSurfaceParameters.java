@@ -7,7 +7,7 @@ import org.apache.commons.math3.stat.descriptive.StorelessUnivariateStatistic;
 import org.apache.commons.math3.stat.descriptive.moment.Mean;
 import org.apache.commons.math3.stat.descriptive.rank.Max;
 
-public class LocalProjectionParameters
+public class ExtractSurfaceParameters
 {
 
 	/**
@@ -59,7 +59,7 @@ public class LocalProjectionParameters
 
 	private final Map< Integer, ProjectionMethod > projectionMethods;
 
-	private LocalProjectionParameters( final Map< Integer, Integer > offsets, final Map< Integer, Integer > deltaZs, final Map< Integer, ProjectionMethod > projectionMethods )
+	private ExtractSurfaceParameters( final Map< Integer, Integer > offsets, final Map< Integer, Integer > deltaZs, final Map< Integer, ProjectionMethod > projectionMethods )
 	{
 		this.offsets = offsets;
 		this.deltaZs = deltaZs;
@@ -198,11 +198,11 @@ public class LocalProjectionParameters
 		/**
 		 * Creates the parameter object.
 		 * 
-		 * @return a new {@link LocalProjectionParameters} instance.
+		 * @return a new {@link ExtractSurfaceParameters} instance.
 		 */
-		public LocalProjectionParameters get()
+		public ExtractSurfaceParameters get()
 		{
-			return new LocalProjectionParameters( offsets, deltaZs, projectionMethods );
+			return new ExtractSurfaceParameters( offsets, deltaZs, projectionMethods );
 		}
 	}
 

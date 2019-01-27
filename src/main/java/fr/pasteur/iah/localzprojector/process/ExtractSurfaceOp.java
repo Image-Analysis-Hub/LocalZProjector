@@ -8,42 +8,37 @@ import org.scijava.plugin.Plugin;
 import net.imagej.ImgPlus;
 import net.imagej.axis.Axes;
 import net.imagej.ops.OpService;
-import net.imagej.ops.special.function.AbstractBinaryFunctionOp;
+import net.imagej.ops.special.computer.AbstractBinaryComputerOp;
 import net.imglib2.Cursor;
-import net.imglib2.Dimensions;
-import net.imglib2.FinalDimensions;
-import net.imglib2.IterableInterval;
 import net.imglib2.RandomAccess;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.img.Img;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.integer.IntType;
-import net.imglib2.util.Util;
 import net.imglib2.view.IntervalView;
 import net.imglib2.view.Views;
 
-@Plugin( type = LocalProjectionOp.class )
-public class LocalProjectionOp< T extends RealType< T > & NativeType< T > > extends AbstractBinaryFunctionOp< ImgPlus< T >, RandomAccessibleInterval< IntType >, ImgPlus< T > > implements Cancelable
+@Plugin( type = ExtractSurfaceOp.class )
+public class ExtractSurfaceOp< T extends RealType< T > & NativeType< T > > extends AbstractBinaryComputerOp< ImgPlus< T >, RandomAccessibleInterval< IntType >, RandomAccessibleInterval< T > > implements Cancelable
 {
 
 	@Parameter
-	private LocalProjectionParameters params;
+	private ExtractSurfaceParameters params;
 
 	@Parameter
 	private OpService ops;
 
 	private String cancelReason;
 
+
 	@Override
-	public ImgPlus< T > calculate( final ImgPlus< T > source, final RandomAccessibleInterval< IntType > referenceSurface )
+	public void compute( final ImgPlus< T > source, final RandomAccessibleInterval< IntType > referenceSurface, final RandomAccessibleInterval< T > output )
 	{
 		// Prepare.
 		cancelReason = null;
 
-		// Create output.
 		final Img< T > img = source.getImg();
-
 
 		final int channelAxis = source.dimensionIndex( Axes.CHANNEL );
 		if ( channelAxis < 0 )
@@ -52,17 +47,8 @@ public class LocalProjectionOp< T extends RealType< T > & NativeType< T > > exte
 			if ( source.numDimensions() != 3 )
 				throw new IllegalArgumentException( "Expected single-channel source to be 3D, but was " + source.numDimensions() + "D." );
 
-			// Create output.
-			final Img< T > output = ops.create().img( referenceSurface, Util.getTypeFromInterval( img ) );
-
 			// Process.
 			processChannel( img, 0, referenceSurface, output );
-
-			// Make a new dataset with the output.
-			final ImgPlus< T > imgPlus = new ImgPlus<>( output, "Local projection of " + source.getName(),
-					source.axis( 0 ),
-					source.axis( 1 ) );
-			return imgPlus;
 		}
 		else
 		{
@@ -70,15 +56,7 @@ public class LocalProjectionOp< T extends RealType< T > & NativeType< T > > exte
 			// Check input.
 			if ( source.numDimensions() != 4 )
 				throw new IllegalArgumentException( "Expected multi-channel source to be 4D (3D+C), but was " + source.numDimensions() + "D." );
-
-			// Create output.
 			final long nChannels = img.dimension( channelAxis );
-			final long[] dims = new long[ 3 ];
-			dims[ 0 ] = source.dimension( 0 );
-			dims[ 1 ] = source.dimension( 1 );
-			dims[ 2 ] = nChannels;
-			final Dimensions dimensions = new FinalDimensions( dims );
-			final Img< T > output = ops.create().img( dimensions, Util.getTypeFromInterval( img ) );
 
 			// Process.
 			for ( int c = 0; c < nChannels; c++ )
@@ -87,22 +65,15 @@ public class LocalProjectionOp< T extends RealType< T > & NativeType< T > > exte
 				final IntervalView< T > target = Views.hyperSlice( output, channelAxis, c );
 				processChannel( channel, c, referenceSurface, target );
 			}
-
-			// Make a new dataset with the output.
-			final ImgPlus< T > imgPlus = new ImgPlus<>( output, "Local projection of " + source.getName(),
-					source.axis( 0 ),
-					source.axis( 0 ),
-					source.axis( channelAxis ) );
-			return imgPlus;
 		}
 	}
 
-	private void processChannel( final RandomAccessibleInterval< T > channel, final int c, final RandomAccessibleInterval< IntType > referenceSurface, final IterableInterval< T > target )
+	private void processChannel( final RandomAccessibleInterval< T > channel, final int c, final RandomAccessibleInterval< IntType > referenceSurface, final RandomAccessibleInterval< T > target )
 	{
 		final int offset = params.offset( c );
 		final int deltaZ = params.deltaZ( c );
 		final StorelessUnivariateStatistic projector = params.projectionMethod( c ).projector();
-		final Cursor< T > cursor = target.localizingCursor(); // 2D
+		final Cursor< T > cursor = Views.iterable( target ).localizingCursor(); // 2D
 		final RandomAccess< IntType > raReference = referenceSurface.randomAccess( referenceSurface ); // 2D
 		final RandomAccess< T > ra = channel.randomAccess( channel ); // 3D
 
