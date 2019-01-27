@@ -12,7 +12,7 @@ import javax.swing.JPanel;
 import javax.swing.JSeparator;
 import javax.swing.SwingConstants;
 
-import fr.pasteur.iah.localzprojector.process.LocalProjectionParameters;
+import fr.pasteur.iah.localzprojector.process.ExtractSurfaceParameters;
 import fr.pasteur.iah.localzprojector.process.ReferenceSurfaceParameters;
 import net.imagej.Dataset;
 
@@ -23,17 +23,17 @@ public class GuiPanel extends JPanel
 
 	private ReferenceSurfacePanel referenceSurfacePanel;
 
-	private LocalProjectionPanel localProjectionPanel;
+	private ExtractSurfacePanel localProjectionPanel;
 
 	private final TargetImagePanel targetImagePanel;
 
-	private final RunPanel runPanel;
+	final RunPanel runPanel;
 
 	private Dataset dataset;
 
 	/**
 	 * Creates the GUI panel.
-	 * 
+	 *
 	 * @param datasetSupplier
 	 *            supplier that returns the currently selected {@link Dataset}.
 	 * @param previewReferencePlaneRunner
@@ -50,7 +50,7 @@ public class GuiPanel extends JPanel
 	 * @param stopper
 	 *            function to run with the 'Stop' button is pressed.
 	 */
-	public GuiPanel( 
+	public GuiPanel(
 			final Supplier< Dataset > datasetSupplier,
 			final Runnable previewReferencePlaneRunner,
 			final Consumer< Boolean > previewLocalProjectionRunner,
@@ -125,11 +125,11 @@ public class GuiPanel extends JPanel
 		 */
 
 		refreshDataset( datasetSupplier.get() );
-		
+
 		/*
 		 * Wire listeners.
 		 */
-		
+
 		runPanel.btnPreviewReferencePlane.addActionListener( l -> previewReferencePlaneRunner.run() );
 		runPanel.btnPreviewLocalProjection.addActionListener( l -> previewLocalProjectionRunner.accept( runPanel.showReferencePlanePreview() ) );
 		runPanel.btnRun.addActionListener( l -> localProjectionRunner.accept( runPanel.showReferencePlaneMovie() ) );
@@ -180,7 +180,7 @@ public class GuiPanel extends JPanel
 
 		c.gridy++;
 		c.fill = GridBagConstraints.BOTH;
-		localProjectionPanel = new LocalProjectionPanel( nChannels, nZSlices );
+		localProjectionPanel = new ExtractSurfacePanel( nChannels, nZSlices );
 		add( localProjectionPanel, c );
 
 		/*
@@ -198,7 +198,7 @@ public class GuiPanel extends JPanel
 		return referenceSurfacePanel.getParameters();
 	}
 
-	public LocalProjectionParameters getLocalProjectionParameters()
+	public ExtractSurfaceParameters getExtractSurfaceParameters()
 	{
 		if ( null == localProjectionPanel )
 			return null;
