@@ -21,9 +21,9 @@ public class GuiPanel extends JPanel
 
 	private static final long serialVersionUID = 1L;
 
-	private ReferenceSurfacePanel referenceSurfacePanel;
+	ReferenceSurfacePanel referenceSurfacePanel;
 
-	private ExtractSurfacePanel localProjectionPanel;
+	ExtractSurfacePanel extractSurfacePanel;
 
 	private final TargetImagePanel targetImagePanel;
 
@@ -131,8 +131,8 @@ public class GuiPanel extends JPanel
 		 */
 
 		runPanel.btnPreviewReferencePlane.addActionListener( l -> previewReferencePlaneRunner.run() );
-		runPanel.btnPreviewLocalProjection.addActionListener( l -> previewLocalProjectionRunner.accept( runPanel.showReferencePlanePreview() ) );
-		runPanel.btnRun.addActionListener( l -> localProjectionRunner.accept( runPanel.showReferencePlaneMovie() ) );
+		runPanel.btnPreviewLocalProjection.addActionListener( l -> previewLocalProjectionRunner.accept( runPanel.showReferenceSurfacePreview() ) );
+		runPanel.btnRun.addActionListener( l -> localProjectionRunner.accept( runPanel.showReferenceSurfaceMovie() ) );
 		runPanel.btnStop.addActionListener( l -> stopper.run() );
 	}
 
@@ -141,8 +141,8 @@ public class GuiPanel extends JPanel
 		this.dataset = dataset;
 		if ( null != referenceSurfacePanel )
 			remove( referenceSurfacePanel );
-		if ( null != localProjectionPanel )
-			remove( localProjectionPanel );
+		if ( null != extractSurfacePanel )
+			remove( extractSurfacePanel );
 
 		targetImagePanel.refresh( dataset );
 		if ( null == dataset )
@@ -180,8 +180,8 @@ public class GuiPanel extends JPanel
 
 		c.gridy++;
 		c.fill = GridBagConstraints.BOTH;
-		localProjectionPanel = new ExtractSurfacePanel( nChannels, nZSlices );
-		add( localProjectionPanel, c );
+		extractSurfacePanel = new ExtractSurfacePanel( nChannels, nZSlices );
+		add( extractSurfacePanel, c );
 
 		/*
 		 * Pack
@@ -200,9 +200,9 @@ public class GuiPanel extends JPanel
 
 	public ExtractSurfaceParameters getExtractSurfaceParameters()
 	{
-		if ( null == localProjectionPanel )
+		if ( null == extractSurfacePanel )
 			return null;
-		return localProjectionPanel.getParameters();
+		return extractSurfacePanel.getParameters();
 	}
 
 	public Dataset getSelectedDataset()

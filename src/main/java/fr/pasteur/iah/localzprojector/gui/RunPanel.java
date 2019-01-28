@@ -27,9 +27,9 @@ public class RunPanel extends JPanel
 
 	private final static ImageIcon STOP_ICON = new ImageIcon( RunPanel.class.getResource( "stop.png" ) );
 
-	private boolean showReferencePlaneMovie = false;
+	private static final boolean DEFAULT_SHOW_REFERENCE_PLANE_MOVIE = false;
 
-	private boolean showReferencePlanePreview = false;
+	private static final boolean DEFAULT_SHOW_REFERENCE_PLANE_PREVIEW = false;
 
 	final JButton btnRun;
 
@@ -38,6 +38,10 @@ public class RunPanel extends JPanel
 	final JButton btnPreviewLocalProjection;
 
 	final JButton btnPreviewReferencePlane;
+
+	private final JCheckBox chckbxShowReferencePlanePreview;
+
+	private final JCheckBox chckbxShowReferenceFrame;
 
 	public RunPanel()
 	{
@@ -102,8 +106,7 @@ public class RunPanel extends JPanel
 		gbc_lblLocalProjection.gridy = 1;
 		panelPreview.add( lblLocalProjection, gbc_lblLocalProjection );
 
-		final JCheckBox chckbxShowReferencePlanePreview = new JCheckBox( "Show reference plane", showReferencePlanePreview );
-		chckbxShowReferencePlanePreview.addActionListener( l -> showReferencePlanePreview = chckbxShowReferencePlanePreview.isSelected() );
+		this.chckbxShowReferencePlanePreview = new JCheckBox( "Show reference plane", DEFAULT_SHOW_REFERENCE_PLANE_PREVIEW );
 		final GridBagConstraints gbc_chckbxNewCheckBox = new GridBagConstraints();
 		gbc_chckbxNewCheckBox.fill = GridBagConstraints.HORIZONTAL;
 		gbc_chckbxNewCheckBox.gridwidth = 2;
@@ -127,18 +130,27 @@ public class RunPanel extends JPanel
 		btnStop = new JButton( "Stop", STOP_ICON );
 		panelRun.add( btnStop );
 
-		final JCheckBox chckbxShowReferenceFrame = new JCheckBox( "Show reference plane movie", showReferencePlaneMovie );
-		chckbxShowReferenceFrame.addActionListener( l -> showReferencePlaneMovie = chckbxShowReferenceFrame.isSelected() );
+		this.chckbxShowReferenceFrame = new JCheckBox( "Show reference plane movie", DEFAULT_SHOW_REFERENCE_PLANE_MOVIE );
 		panelRun.add( chckbxShowReferenceFrame );
 	}
 
-	public boolean showReferencePlaneMovie()
+	public boolean showReferenceSurfaceMovie()
 	{
-		return showReferencePlaneMovie;
+		return chckbxShowReferenceFrame.isSelected();
 	}
 
-	public boolean showReferencePlanePreview()
+	public void setShowReferenceSurfaceMovie( final boolean showReferencePlaneMovie )
 	{
-		return showReferencePlanePreview;
+		chckbxShowReferenceFrame.setSelected( showReferencePlaneMovie );
+	}
+
+	public boolean showReferenceSurfacePreview()
+	{
+		return chckbxShowReferencePlanePreview.isSelected();
+	}
+
+	public void setShowReferenceSurfacePreview( final boolean showReferencePlane )
+	{
+		chckbxShowReferencePlanePreview.setSelected( showReferencePlane );
 	}
 }

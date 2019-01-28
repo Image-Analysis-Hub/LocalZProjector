@@ -1,14 +1,10 @@
 package fr.pasteur.iah.localzprojector.gui;
 
-import java.io.IOException;
 import java.util.List;
-import java.util.Locale;
 import java.util.function.Supplier;
 
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.UIManager;
-import javax.swing.UnsupportedLookAndFeelException;
 
 import org.scijava.Cancelable;
 import org.scijava.Context;
@@ -24,7 +20,6 @@ import fr.pasteur.iah.localzprojector.process.ReferenceSurfaceParameters;
 import fr.pasteur.iah.localzprojector.util.EverythingDisablerAndReenabler;
 import net.imagej.Dataset;
 import net.imagej.DefaultDataset;
-import net.imagej.ImageJ;
 import net.imagej.ImgPlus;
 import net.imagej.axis.Axes;
 import net.imagej.display.ImageDisplay;
@@ -209,18 +204,26 @@ public class GuiController
 				"Local Z Projector Preview Reference Plane Thread" ).start();
 	}
 
-	public static void main( final String[] args ) throws ClassNotFoundException, InstantiationException, IllegalAccessException, UnsupportedLookAndFeelException, IOException
+	public void setReferenceSurfaceParameters( final ReferenceSurfaceParameters referenceSurfaceParameters )
 	{
-		Locale.setDefault( Locale.ROOT );
-		UIManager.setLookAndFeel( UIManager.getSystemLookAndFeelClassName() );
+		final ReferenceSurfacePanel referenceSurfacePanel = guiPanel.referenceSurfacePanel;
+		if ( null == referenceSurfacePanel )
+			return;
 
-		final ImageJ ij = new ImageJ();
-		ij.launch( args );
+		referenceSurfacePanel.setParameters( referenceSurfaceParameters );
+	}
 
-		final String imageFile = "samples/Composite.tif";
-		final Object open = ij.io().open( imageFile );
-		ij.ui().show( open );
+	public void setExtractSurfaceParameters( final ExtractSurfaceParameters extractSurfaceParameters )
+	{
+		final ExtractSurfacePanel extractSurfacePanel = guiPanel.extractSurfacePanel;
+		if ( null == extractSurfacePanel )
+			return;
 
-		new GuiController( ij.context() );
+		extractSurfacePanel.setParameters( extractSurfaceParameters );
+	}
+
+	public void setShowReferenceSurfaceMovie( final boolean showReferenceSurfaceMovie )
+	{
+		guiPanel.runPanel.setShowReferenceSurfaceMovie( showReferenceSurfaceMovie );
 	}
 }
