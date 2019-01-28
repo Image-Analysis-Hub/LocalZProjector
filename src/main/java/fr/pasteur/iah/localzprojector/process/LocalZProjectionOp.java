@@ -3,9 +3,9 @@ package fr.pasteur.iah.localzprojector.process;
 import org.scijava.Cancelable;
 import org.scijava.ItemIO;
 import org.scijava.app.StatusService;
+import org.scijava.display.DisplayService;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
-import org.scijava.ui.UIService;
 
 import net.imagej.Dataset;
 import net.imagej.DefaultDataset;
@@ -40,6 +40,9 @@ public class LocalZProjectionOp< T extends RealType< T > & NativeType< T > > ext
 
 	@Parameter( type = ItemIO.INPUT, required = false )
 	private boolean showOutputDuringCalculation = false;
+
+	@Parameter
+	private DisplayService displayService;
 
 	private String cancelReason;
 
@@ -125,10 +128,9 @@ public class LocalZProjectionOp< T extends RealType< T > & NativeType< T > > ext
 
 		if ( showOutputDuringCalculation )
 		{
-			final UIService ui = ops().context().getService( UIService.class );
-			ui.show( output );
+			displayService.createDisplay( output );
 			if ( showReferenceSurface )
-				ui.show( referenceSurfaces );
+				displayService.createDisplay( referenceSurfaces );
 		}
 
 		/*
@@ -173,8 +175,11 @@ public class LocalZProjectionOp< T extends RealType< T > & NativeType< T > > ext
 			 * Show reference surface?
 			 */
 
-			if ( showReferenceSurface )
+			if ( showOutputDuringCalculation && showReferenceSurface )
+			{
 				copyOnReferenceSurfaceOutput( referenceSurface, ( ImgPlus< IntType > ) referenceSurfaces.getImgPlus(), t );
+				referenceSurfaces.update();
+			}
 
 			/*
 			 * Extract surface.
@@ -186,6 +191,9 @@ public class LocalZProjectionOp< T extends RealType< T > & NativeType< T > > ext
 
 			final RandomAccessibleInterval< T > outputSlice = getOutputTimePoint( outImgPlus, t );
 			extractSurfaceOp.compute( tp, referenceSurface, outputSlice );
+
+			if ( showOutputDuringCalculation )
+				output.update();
 
 			status.showProgress( ( int ) t, ( int ) nFrames );
 		}
