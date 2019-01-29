@@ -12,11 +12,14 @@ import org.scijava.plugin.Plugin;
 
 import net.imagej.Dataset;
 import net.imagej.ImageJ;
+import net.imagej.ops.Op;
 import net.imagej.ops.Ops;
 import net.imagej.ops.special.computer.Computers;
 import net.imagej.ops.special.computer.UnaryComputerOp;
 import net.imagej.ops.special.function.AbstractUnaryFunctionOp;
 import net.imagej.ops.special.function.Functions;
+import net.imagej.ops.thread.chunker.ChunkerOp;
+import net.imagej.ops.thread.chunker.CursorBasedChunk;
 import net.imglib2.Cursor;
 import net.imglib2.FinalDimensions;
 import net.imglib2.RandomAccess;
@@ -36,54 +39,66 @@ public class BinningOp< T extends RealType< T > > extends AbstractUnaryFunctionO
 	@Parameter( type = ItemIO.INPUT )
 	private int[] binfactors;
 
+	@Parameter( type = ItemIO.INPUT, required = false )
+	private Class< ? extends Op > ocClass = Ops.Stats.Mean.class;
+
 	@Override
-	public Img<T> calculate(final RandomAccessibleInterval<T> input) {
+	public Img< T > calculate( final RandomAccessibleInterval< T > input )
+	{
 
 		final int numDimensions = input.numDimensions();
-		if (numDimensions != binfactors.length)
-			throw new IllegalArgumentException("Bin n-dimensions and input n-dimensions must be equal. Bins have "
-					+ binfactors.length + " dimensions and input has " + numDimensions + " dimensions.");
+		if ( numDimensions != binfactors.length )
+			throw new IllegalArgumentException( "Bin n-dimensions and input n-dimensions must be equal. Bins have "
+					+ binfactors.length + " dimensions and input has " + numDimensions + " dimensions." );
 
 		// Prepare output.
-		final long[] imgSize = new long[numDimensions];
-		input.dimensions(imgSize);
-		final long[] newSize = new long[numDimensions];
-		for (int d = 0; d < input.numDimensions(); ++d)
-			newSize[d] = input.dimension(d) / binfactors[d];
+		final long[] imgSize = new long[ numDimensions ];
+		input.dimensions( imgSize );
+		final long[] newSize = new long[ numDimensions ];
+		for ( int d = 0; d < input.numDimensions(); ++d )
+			newSize[ d ] = input.dimension( d ) / binfactors[ d ];
 
-		final ImgFactory<T> factory = Util.getSuitableImgFactory(FinalDimensions.wrap(newSize),
-				Util.getTypeFromInterval(input));
-		final Img<T> binned = factory.create(FinalDimensions.wrap(newSize));
-		final Cursor<T> cursor = binned.localizingCursor();
-		final long[] currPos = new long[input.numDimensions()];
+		final ImgFactory< T > factory = Util.getSuitableImgFactory( FinalDimensions.wrap( newSize ),
+				Util.getTypeFromInterval( input ) );
+		final Img< T > binned = factory.create( FinalDimensions.wrap( newSize ) );
 
 		final NotCenteredRectangleShape shape = new NotCenteredRectangleShape( binfactors );
 		final RandomAccessible< Neighborhood< T > > ran = shape.neighborhoodsRandomAccessible( Views.extendMirrorSingle( input ) );
-		final RandomAccess<Neighborhood<T>> ra = ran.randomAccess(input);
-
 
 		@SuppressWarnings( { "rawtypes", "unchecked" } )
-		final UnaryComputerOp< Iterable< T >, T > op = ( UnaryComputerOp ) Computers.unary( ops(), Ops.Stats.Mean.class, binned.firstElement().getClass(), Iterable.class );
+		final UnaryComputerOp< Iterable< T >, T > op = ( UnaryComputerOp ) Computers.unary( ops(), ocClass, binned.firstElement().getClass(), Iterable.class );
 
-		while (cursor.hasNext()) {
-			cursor.next();
-			cursor.localize(currPos);
+		// Multithread.
+		ops().run( ChunkerOp.class, new CursorBasedChunk()
+		{
+			@Override
+			public void execute( final int startIndex, final int stepSize, final int numSteps )
+			{
+				final RandomAccess< Neighborhood< T > > ra = ran.randomAccess( input );
+				final long[] currPos = new long[ input.numDimensions() ];
+				final Cursor< T > cursor = binned.localizingCursor();
+				cursor.jumpFwd( startIndex );
+				for ( int i = 0; i < numSteps; ++i )
+				{
+					cursor.next();
+					cursor.localize( currPos );
 
-			// Transform coordinates.
-			for (int d = 0; d < numDimensions; d++)
-				currPos[d] *= binfactors[d];
+					// 'Transform' coordinates.
+					for ( int d = 0; d < numDimensions; d++ )
+						currPos[ d ] *= binfactors[ d ];
 
-			// Iterate and sum.
-			ra.setPosition(currPos);
+					// Iterate and compute.
+					ra.setPosition( currPos );
+					op.compute( ra.get(), cursor.get() );
+				}
+			}
+		}, binned.size() );
 
-			// Iterate and compute.
-			op.compute( ra.get(), cursor.get() );
-		}
 		return binned;
 	}
 
 	@SuppressWarnings( "unchecked" )
-	public static <T extends RealType< T >> void main( final String[] args ) throws ClassNotFoundException, InstantiationException, IllegalAccessException, UnsupportedLookAndFeelException, IOException
+	public static < T extends RealType< T > > void main( final String[] args ) throws ClassNotFoundException, InstantiationException, IllegalAccessException, UnsupportedLookAndFeelException, IOException
 	{
 		Locale.setDefault( Locale.ROOT );
 		UIManager.setLookAndFeel( UIManager.getSystemLookAndFeelClassName() );
@@ -98,14 +113,38 @@ public class BinningOp< T extends RealType< T > > extends AbstractUnaryFunctionO
 		final Dataset dataset = ij.dataset().getDatasets().get( 0 );
 
 		@SuppressWarnings( "rawtypes" )
-		final BinningOp< T > binner = (BinningOp) Functions.unary(
+		final BinningOp< T > binnerAvg = ( BinningOp ) Functions.unary(
 				ij.op(),
 				BinningOp.class,
 				Img.class,
 				RandomAccessibleInterval.class,
-				binFactors  );
+				binFactors );
 
-		final Img< T > out = binner.calculate( ( RandomAccessibleInterval< T > ) dataset.getImgPlus() );
-		ij.ui().show( out );
+		final Img< T > out = binnerAvg.calculate( ( RandomAccessibleInterval< T > ) dataset.getImgPlus() );
+		ij.ui().show( "Binned with mean", out );
+
+		@SuppressWarnings( "rawtypes" )
+		final BinningOp< T > binnerMax = ( BinningOp ) Functions.unary(
+				ij.op(),
+				BinningOp.class,
+				Img.class,
+				RandomAccessibleInterval.class,
+				binFactors,
+				Ops.Stats.Max.class );
+
+		final Img< T > out2 = binnerMax.calculate( ( RandomAccessibleInterval< T > ) dataset.getImgPlus() );
+		ij.ui().show( "Binned with max", out2 );
+
+		@SuppressWarnings( "rawtypes" )
+		final BinningOp< T > binnerMin = ( BinningOp ) Functions.unary(
+				ij.op(),
+				BinningOp.class,
+				Img.class,
+				RandomAccessibleInterval.class,
+				binFactors,
+				Ops.Stats.Min.class );
+
+		final Img< T > out3 = binnerMin.calculate( ( RandomAccessibleInterval< T > ) dataset.getImgPlus() );
+		ij.ui().show( "Binned with min", out3 );
 	}
 }
