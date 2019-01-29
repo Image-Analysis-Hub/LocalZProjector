@@ -85,10 +85,10 @@ public class ExtractSurfaceOp< T extends RealType< T > & NativeType< T > > exten
 			ra.setPosition( cursor.getLongPosition( 1 ), 1 );
 
 			final long zmin = Math.max( 0,
-					Math.min( channel.dimension( 2 ),
+					Math.min( channel.dimension( 2 ) - 1,
 							raReference.get().get() + offset - deltaZ ) );
 			final long zmax = Math.max( 0,
-					Math.min( channel.dimension( 2 ),
+					Math.min( channel.dimension( 2 ) - 1,
 							raReference.get().get() + offset + deltaZ ) );
 
 
