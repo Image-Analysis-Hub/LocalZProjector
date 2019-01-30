@@ -6,6 +6,7 @@ import java.awt.Insets;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSeparator;
@@ -20,6 +21,8 @@ public class GuiPanel extends JPanel
 {
 
 	private static final long serialVersionUID = 1L;
+
+	static JFileChooser fileChooser = new JFileChooser();
 
 	ReferenceSurfacePanel referenceSurfacePanel;
 

@@ -3,6 +3,8 @@ package fr.pasteur.iah.localzprojector.gui;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -11,12 +13,14 @@ import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
+import javax.swing.filechooser.FileFilter;
 
 import fr.pasteur.iah.localzprojector.process.ExtractSurfaceParameters;
 import fr.pasteur.iah.localzprojector.process.ExtractSurfaceParameters.Builder;
@@ -31,6 +35,25 @@ public class ExtractSurfacePanel extends JPanel
 	private final static ImageIcon SAVE_ICON = new ImageIcon( ReferenceSurfacePanel.class.getResource( "page_save.png" ) );
 
 	private final List< ExtractSurfaceChannelPanel > channels;
+
+	private final static String suffix = ".extractsurface.localzprojector";
+	
+	private final static FileFilter filter = new FileFilter()
+	{
+
+		@Override
+		public boolean accept( final File f )
+		{
+			return f.getAbsolutePath().toLowerCase().endsWith( suffix.toLowerCase() );
+		}
+
+		@Override
+		public String getDescription()
+		{
+			return "Extract-Surface parameters";
+		}
+
+	};
 
 	public ExtractSurfacePanel( final int nChannels, final int nZSlices )
 	{
@@ -85,6 +108,62 @@ public class ExtractSurfacePanel extends JPanel
 			channels.add( ci );
 			panelChannels.add( ci );
 			panelChannels.add( Box.createHorizontalStrut( 5 ) );
+		}
+
+		/*
+		 * Listeners.
+		 */
+
+		btnLoadParams.addActionListener( l -> loadParameters() );
+		btnSaveParams.addActionListener( l -> saveParameters() );
+	}
+
+	private void saveParameters()
+	{
+		GuiPanel.fileChooser.setDialogTitle( "Save Extract-Surface parameters" );
+		GuiPanel.fileChooser.setFileFilter( filter );
+		final int answer = GuiPanel.fileChooser.showSaveDialog( getParent() );
+		if ( JFileChooser.APPROVE_OPTION != answer )
+			return;
+
+		File file = GuiPanel.fileChooser.getSelectedFile();
+		if ( !file.getAbsolutePath().endsWith( suffix ) )
+			file = new File( file.getAbsolutePath() + suffix );
+
+		try
+		{
+			ExtractSurfaceParameters.serialize( getParameters(), file );
+		}
+		catch ( final IOException e )
+		{
+			System.err.println( "Cannot write to " + file + ":\n" + e.getMessage() );
+			e.printStackTrace();
+		}
+	}
+
+	private void loadParameters()
+	{
+		GuiPanel.fileChooser.setDialogTitle( "Load Extract-Surface parameters" );
+		GuiPanel.fileChooser.setFileFilter( filter );
+		final int answer = GuiPanel.fileChooser.showOpenDialog( getParent() );
+		if ( JFileChooser.APPROVE_OPTION != answer )
+			return;
+		
+		final File file = GuiPanel.fileChooser.getSelectedFile();
+		if ( !file.canRead() )
+		{
+			System.err.println( "Cannot read from " + file );
+			return;
+		}
+
+		try
+		{
+			final ExtractSurfaceParameters params = ExtractSurfaceParameters.deserialize( file );
+			setParameters( params );
+		}
+		catch ( ClassNotFoundException | IOException e )
+		{
+			System.err.println( "Cannot read from " + file + ":\n" + e.getMessage() );
 		}
 	}
 

@@ -3,6 +3,8 @@ package fr.pasteur.iah.localzprojector.gui;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.io.File;
+import java.io.IOException;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.Locale;
@@ -12,6 +14,7 @@ import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JFileChooser;
 import javax.swing.JFormattedTextField;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -21,6 +24,7 @@ import javax.swing.JTextField;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
+import javax.swing.filechooser.FileFilter;
 
 import fr.pasteur.iah.localzprojector.process.ReferenceSurfaceParameters;
 import fr.pasteur.iah.localzprojector.process.ReferenceSurfaceParameters.Method;
@@ -33,6 +37,25 @@ public class ReferenceSurfacePanel extends JPanel
 	private final static ImageIcon LOAD_ICON = new ImageIcon( ReferenceSurfacePanel.class.getResource( "page_go.png" ) );
 
 	private final static ImageIcon SAVE_ICON = new ImageIcon( ReferenceSurfacePanel.class.getResource( "page_save.png" ) );
+
+	private final static String suffix = ".referencesurface.localzprojector";
+
+	private final static FileFilter filter = new FileFilter()
+	{
+
+		@Override
+		public boolean accept( final File f )
+		{
+			return f.getAbsolutePath().toLowerCase().endsWith( suffix.toLowerCase() );
+		}
+
+		@Override
+		public String getDescription()
+		{
+			return "Reference-Surface parameters";
+		}
+
+	};
 
 	private final SpinnerNumberModel spinnerModelChannel;
 
@@ -189,14 +212,53 @@ public class ReferenceSurfacePanel extends JPanel
 		spinnerModelMedian.setValue( Integer.valueOf( 2 * params.medianHalfSize + 1 ) );
 	}
 
-	private void loadParameters()
-	{
-		// TODO Auto-generated method stub
-	}
-
 	private void saveParameters()
 	{
-		// TODO Auto-generated method stub
+		GuiPanel.fileChooser.setDialogTitle( "Save Reference-Surface parameters" );
+		GuiPanel.fileChooser.setFileFilter( filter );
+		final int answer = GuiPanel.fileChooser.showSaveDialog( getParent() );
+		if ( JFileChooser.APPROVE_OPTION != answer )
+			return;
+
+		File file = GuiPanel.fileChooser.getSelectedFile();
+		if ( !file.getAbsolutePath().endsWith( suffix ) )
+			file = new File( file.getAbsolutePath() + suffix );
+
+		try
+		{
+			ReferenceSurfaceParameters.serialize( getParameters(), file );
+		}
+		catch ( final IOException e )
+		{
+			System.err.println( "Cannot write to " + file + ":\n" + e.getMessage() );
+			e.printStackTrace();
+		}
+	}
+
+	private void loadParameters()
+	{
+		GuiPanel.fileChooser.setDialogTitle( "Load Reference-Surface parameters" );
+		GuiPanel.fileChooser.setFileFilter( filter );
+		final int answer = GuiPanel.fileChooser.showOpenDialog( getParent() );
+		if ( JFileChooser.APPROVE_OPTION != answer )
+			return;
+
+		final File file = GuiPanel.fileChooser.getSelectedFile();
+		if ( !file.canRead() )
+		{
+			System.err.println( "Cannot read from " + file );
+			return;
+		}
+
+		try
+		{
+			final ReferenceSurfaceParameters params = ReferenceSurfaceParameters.deserialize( file );
+			setParameters( params );
+		}
+		catch ( ClassNotFoundException | IOException e )
+		{
+			System.err.println( "Cannot read from " + file + ":\n" + e.getMessage() );
+		}
 	}
 
 	public static void main( final String[] args ) throws ClassNotFoundException, InstantiationException, IllegalAccessException, UnsupportedLookAndFeelException
