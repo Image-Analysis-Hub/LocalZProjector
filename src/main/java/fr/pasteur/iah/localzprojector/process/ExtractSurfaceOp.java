@@ -15,12 +15,12 @@ import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.img.Img;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.RealType;
-import net.imglib2.type.numeric.integer.IntType;
+import net.imglib2.type.numeric.integer.UnsignedShortType;
 import net.imglib2.view.IntervalView;
 import net.imglib2.view.Views;
 
 @Plugin( type = ExtractSurfaceOp.class )
-public class ExtractSurfaceOp< T extends RealType< T > & NativeType< T > > extends AbstractBinaryComputerOp< ImgPlus< T >, RandomAccessibleInterval< IntType >, RandomAccessibleInterval< T > > implements Cancelable
+public class ExtractSurfaceOp< T extends RealType< T > & NativeType< T > > extends AbstractBinaryComputerOp< ImgPlus< T >, RandomAccessibleInterval< UnsignedShortType >, RandomAccessibleInterval< T > > implements Cancelable
 {
 
 	@Parameter
@@ -33,7 +33,7 @@ public class ExtractSurfaceOp< T extends RealType< T > & NativeType< T > > exten
 
 
 	@Override
-	public void compute( final ImgPlus< T > source, final RandomAccessibleInterval< IntType > referenceSurface, final RandomAccessibleInterval< T > output )
+	public void compute( final ImgPlus< T > source, final RandomAccessibleInterval< UnsignedShortType > referenceSurface, final RandomAccessibleInterval< T > output )
 	{
 		// Prepare.
 		cancelReason = null;
@@ -68,13 +68,13 @@ public class ExtractSurfaceOp< T extends RealType< T > & NativeType< T > > exten
 		}
 	}
 
-	private void processChannel( final RandomAccessibleInterval< T > channel, final int c, final RandomAccessibleInterval< IntType > referenceSurface, final RandomAccessibleInterval< T > target )
+	private void processChannel( final RandomAccessibleInterval< T > channel, final int c, final RandomAccessibleInterval< UnsignedShortType > referenceSurface, final RandomAccessibleInterval< T > target )
 	{
 		final int offset = params.offset( c );
 		final int deltaZ = params.deltaZ( c );
 		final StorelessUnivariateStatistic projector = params.projectionMethod( c ).projector();
 		final Cursor< T > cursor = Views.iterable( target ).localizingCursor(); // 2D
-		final RandomAccess< IntType > raReference = referenceSurface.randomAccess( referenceSurface ); // 2D
+		final RandomAccess< UnsignedShortType > raReference = referenceSurface.randomAccess( referenceSurface ); // 2D
 		final RandomAccess< T > ra = channel.randomAccess( channel ); // 3D
 
 		while ( cursor.hasNext() )

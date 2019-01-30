@@ -48,6 +48,8 @@ public class ReferenceSurfacePanel extends JPanel
 
 	private final SpinnerNumberModel spinnerModelMedian;
 
+	private SpinnerNumberModel spinnerModelBinning;
+
 	public ReferenceSurfacePanel( final int nChannels, final int nZSlices )
 	{
 		final GridBagLayout gridBagLayout = new GridBagLayout();
@@ -74,6 +76,14 @@ public class ReferenceSurfacePanel extends JPanel
 		c.gridx = 1;
 		this.spinnerModelChannel = new SpinnerNumberModel( 0, 0, nChannels - 1, 1 );
 		add( new JSpinner( spinnerModelChannel ), c );
+
+		c.gridx = 0;
+		c.gridy++;
+		add( new JLabel( "Binning:" ), c );
+
+		c.gridx = 1;
+		this.spinnerModelBinning = new SpinnerNumberModel( 1, 1, 100, 1 );
+		add( new JSpinner( spinnerModelBinning ), c );
 
 		c.gridx = 0;
 		c.gridy++;
@@ -157,6 +167,7 @@ public class ReferenceSurfacePanel extends JPanel
 	{
 		return ReferenceSurfaceParameters.create()
 				.targetChannel( ( ( Number ) spinnerModelChannel.getValue() ).intValue() )
+				.binning( ( ( Number ) spinnerModelBinning.getValue() ).intValue() )
 				.method( ( Method ) comboBoxMethod.getSelectedItem() )
 				.halfWindowSize( ( ( ( Number ) spinnerModelSize.getValue() ).intValue() - 1 ) / 2 )
 				.zMin( ( ( Number ) spinnerModelZMin.getValue() ).intValue() )
@@ -169,6 +180,7 @@ public class ReferenceSurfacePanel extends JPanel
 	public void setParameters( final ReferenceSurfaceParameters params )
 	{
 		spinnerModelChannel.setValue( Integer.valueOf( params.targetChannel ) );
+		spinnerModelBinning.setValue( Integer.valueOf( params.binning ) );
 		comboBoxMethod.setSelectedItem( params.method );
 		spinnerModelSize.setValue( Integer.valueOf( 2 * params.halfWindowSize + 1 ) );
 		spinnerModelZMin.setValue( Integer.valueOf( params.zMin ) );

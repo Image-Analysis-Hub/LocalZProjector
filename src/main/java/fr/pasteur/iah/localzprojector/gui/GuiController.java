@@ -31,7 +31,7 @@ import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.img.Img;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.RealType;
-import net.imglib2.type.numeric.integer.IntType;
+import net.imglib2.type.numeric.integer.UnsignedShortType;
 import net.imglib2.view.Views;
 
 public class GuiController
@@ -190,7 +190,7 @@ public class GuiController
 				@SuppressWarnings( { "rawtypes", "unchecked" } )
 				final ReferenceSurfaceOp< T > op = ( ReferenceSurfaceOp ) Functions.unary( ops, ReferenceSurfaceOp.class, Img.class, source, params );
 				cancelable = op;
-				final Img< IntType > referenceSurface = op.calculate( source );
+				final Img< UnsignedShortType > referenceSurface = op.calculate( source );
 
 				final UIService uiService = context.getService( UIService.class );
 				uiService.show( referenceSurface );

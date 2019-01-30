@@ -17,7 +17,9 @@ public class ReferenceSurfaceParameters
 
 	public final int targetChannel;
 
-	private ReferenceSurfaceParameters( final int targetChannel, final Method method, final int halfWindowSize, final int zMin, final int zMax, final double sigma, final int medianSize )
+	public final int binning;
+
+	private ReferenceSurfaceParameters( final int targetChannel, final Method method, final int halfWindowSize, final int zMin, final int zMax, final double sigma, final int medianSize, final int binning )
 	{
 		this.targetChannel = targetChannel;
 		this.method = method;
@@ -26,6 +28,7 @@ public class ReferenceSurfaceParameters
 		this.zMax = zMax;
 		this.sigma = sigma;
 		this.medianHalfSize = medianSize;
+		this.binning = binning;
 	}
 
 	public enum Method
@@ -73,6 +76,8 @@ public class ReferenceSurfaceParameters
 
 		private int targetChannel = 0;
 
+		private int binning = 1;
+
 		public Builder method( final Method method )
 		{
 			this.method = method;
@@ -115,8 +120,25 @@ public class ReferenceSurfaceParameters
 			return this;
 		}
 
+		public Builder binning( final int binning )
+		{
+			this.binning = binning;
+			return this;
+		}
+
 		public ReferenceSurfaceParameters get()
 		{
+			boolean ok = true;
+			final StringBuilder message = new StringBuilder();
+			if ( binning < 1 )
+			{
+				message.append( "\nBinning cannot be lower than 1. Was " + binning + "." );
+				ok = false;
+			}
+
+			if ( !ok )
+				throw new IllegalArgumentException( "Error building ReferenceSurfaceParameters:" + message.toString() );
+
 			return new ReferenceSurfaceParameters(
 					targetChannel,
 					method,
@@ -124,7 +146,8 @@ public class ReferenceSurfaceParameters
 					Math.min( zMin, zMax ),
 					Math.max( zMin, zMax ),
 					sigma,
-					medianHalfSize );
+					medianHalfSize,
+					binning );
 		}
 	}
 }

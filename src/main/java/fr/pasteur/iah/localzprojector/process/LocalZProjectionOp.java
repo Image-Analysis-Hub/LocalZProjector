@@ -21,7 +21,7 @@ import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.img.Img;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.RealType;
-import net.imglib2.type.numeric.integer.IntType;
+import net.imglib2.type.numeric.integer.UnsignedShortType;
 import net.imglib2.view.IntervalView;
 import net.imglib2.view.Views;
 
@@ -92,10 +92,10 @@ public class LocalZProjectionOp< T extends RealType< T > & NativeType< T > > ext
 		{
 			// We want single channel.
 			final int cAxis = output.dimensionIndex( Axes.CHANNEL );
-			final ImgPlus< IntType > imgPlus;
+			final ImgPlus< UnsignedShortType > imgPlus;
 			if ( cAxis < 0 )
 			{
-				final Img< IntType > rsImg = ops().create().img( output, new IntType() );
+				final Img< UnsignedShortType > rsImg = ops().create().img( output, new UnsignedShortType() );
 				imgPlus = new ImgPlus<>( rsImg, "Reference planes of " + input.getName(), axes );
 			}
 			else
@@ -111,7 +111,7 @@ public class LocalZProjectionOp< T extends RealType< T > & NativeType< T > > ext
 					axesRefSurface[ id2++ ] = output.axis( d );
 				}
 
-				final Img< IntType > rsImg = ops().create().img( FinalDimensions.wrap( dimsRefSurface ), new IntType() );
+				final Img< UnsignedShortType > rsImg = ops().create().img( FinalDimensions.wrap( dimsRefSurface ), new UnsignedShortType() );
 				imgPlus = new ImgPlus<>( rsImg, "Reference planes of " + input.getName(), axesRefSurface );
 
 			}
@@ -169,7 +169,7 @@ public class LocalZProjectionOp< T extends RealType< T > & NativeType< T > > ext
 			cancelable = referenceSurfaceOp;
 
 			final RandomAccessibleInterval< T > channel = getChannel( tp, referenceSurfaceParams.targetChannel );
-			final Img< IntType > referenceSurface = referenceSurfaceOp.calculate( channel );
+			final Img< UnsignedShortType > referenceSurface = referenceSurfaceOp.calculate( channel );
 
 			/*
 			 * Show reference surface?
@@ -177,7 +177,7 @@ public class LocalZProjectionOp< T extends RealType< T > & NativeType< T > > ext
 
 			if ( showOutputDuringCalculation && showReferenceSurface )
 			{
-				copyOnReferenceSurfaceOutput( referenceSurface, ( ImgPlus< IntType > ) referenceSurfaces.getImgPlus(), t );
+				copyOnReferenceSurfaceOutput( referenceSurface, ( ImgPlus< UnsignedShortType > ) referenceSurfaces.getImgPlus(), t );
 				referenceSurfaces.update();
 			}
 
@@ -201,16 +201,16 @@ public class LocalZProjectionOp< T extends RealType< T > & NativeType< T > > ext
 		return output;
 	}
 
-	private void copyOnReferenceSurfaceOutput( final Img< IntType > tp, final ImgPlus< IntType > output, final long t )
+	private void copyOnReferenceSurfaceOutput( final Img< UnsignedShortType > tp, final ImgPlus< UnsignedShortType > output, final long t )
 	{
 		final int timeAxis = output.dimensionIndex( Axes.TIME );
 		if ( timeAxis < 0 )
 		{
-			ops().copy().rai( ( RandomAccessibleInterval< IntType > ) output, ( RandomAccessibleInterval< IntType > ) tp );
+			ops().copy().rai( output, tp );
 		}
 		else
 		{
-			final IntervalView< IntType > slice = Views.hyperSlice( output, timeAxis, t );
+			final IntervalView< UnsignedShortType > slice = Views.hyperSlice( output, timeAxis, t );
 			ops().copy().rai( slice, tp );
 		}
 	}
