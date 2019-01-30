@@ -1,5 +1,13 @@
 package fr.pasteur.iah.localzprojector.process;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -7,8 +15,10 @@ import org.apache.commons.math3.stat.descriptive.StorelessUnivariateStatistic;
 import org.apache.commons.math3.stat.descriptive.moment.Mean;
 import org.apache.commons.math3.stat.descriptive.rank.Max;
 
-public class ExtractSurfaceParameters
+public class ExtractSurfaceParameters implements Serializable
 {
+
+	private static final long serialVersionUID = -63871622455310296L;
 
 	/**
 	 * Method to use to generate a single pixel value from the z-neighborhood
@@ -209,5 +219,24 @@ public class ExtractSurfaceParameters
 	public static Builder create()
 	{
 		return new Builder();
+	}
+
+	public static void serialize( final ExtractSurfaceParameters parameters, final File file ) throws FileNotFoundException, IOException
+	{
+		try (FileOutputStream stream = new FileOutputStream( file );
+				ObjectOutputStream out = new ObjectOutputStream( stream ))
+		{
+			out.writeObject( parameters );
+		}
+	}
+
+	public static ExtractSurfaceParameters deserialize( final File file ) throws FileNotFoundException, IOException, ClassNotFoundException
+	{
+		try (FileInputStream stream = new FileInputStream( file );
+				ObjectInputStream in = new ObjectInputStream( stream ))
+		{
+			final Object readObject = in.readObject();
+			return ( ExtractSurfaceParameters ) readObject;
+		}
 	}
 }

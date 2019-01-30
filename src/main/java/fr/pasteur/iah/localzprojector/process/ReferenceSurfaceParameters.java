@@ -1,7 +1,18 @@
 package fr.pasteur.iah.localzprojector.process;
 
-public class ReferenceSurfaceParameters
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
+
+public class ReferenceSurfaceParameters implements Serializable
 {
+
+	private static final long serialVersionUID = -7529278459519251051L;
 
 	public final Method method;
 
@@ -148,6 +159,25 @@ public class ReferenceSurfaceParameters
 					sigma,
 					medianHalfSize,
 					binning );
+		}
+	}
+
+	public static void serialize( final ReferenceSurfaceParameters parameters, final File file ) throws FileNotFoundException, IOException
+	{
+		try (FileOutputStream stream = new FileOutputStream( file );
+				ObjectOutputStream out = new ObjectOutputStream( stream ))
+		{
+			out.writeObject( parameters );
+		}
+	}
+
+	public static ReferenceSurfaceParameters deserialize( final File file ) throws FileNotFoundException, IOException, ClassNotFoundException
+	{
+		try (FileInputStream stream = new FileInputStream( file );
+				ObjectInputStream in = new ObjectInputStream( stream ))
+		{
+			final Object readObject = in.readObject();
+			return ( ReferenceSurfaceParameters ) readObject;
 		}
 	}
 }
