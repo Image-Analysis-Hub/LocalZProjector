@@ -64,6 +64,8 @@ public class GuiController
 				() -> stop() );
 
 		final JFrame frame = new JFrame();
+		frame.setLocationByPlatform( true );
+		frame.setLocationRelativeTo( null );
 		frame.getContentPane().add( guiPanel );
 		frame.pack();
 		frame.setVisible( true );

@@ -1,6 +1,5 @@
 package fr.pasteur.iah.localzprojector.gui;
 
-import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -58,8 +57,6 @@ public class GuiPanel extends JPanel
 			final Consumer< Boolean > localProjectionRunner,
 			final Runnable stopper )
 	{
-		setPreferredSize( new Dimension( 500, 1100 ) );
-
 		final GridBagLayout gridBagLayout = new GridBagLayout();
 		gridBagLayout.columnWeights = new double[] { 1. };
 		gridBagLayout.rowWeights = new double[] { 0., 0., 0., 0., 0., 0., 0., 1. };
