@@ -34,7 +34,32 @@
 		<license.licenseName>bsd_v3</license.licenseName>
 		<license.copyrightOwners>IAH developers.</license.copyrightOwners>
 		<license.projectName>Image Analysis Hub support for Life Scientists.</license.projectName>
+		<!-- Export build properties to make them accessible at runtime. -->
+		<name>${project.name></name>
+		<version>${project.version}</version>
 	</properties>
+	
+	<build>
+		<plugins>
+			<plugin>
+				<!-- Used to export build properties. -->
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>properties-maven-plugin</artifactId>
+				<version>1.0.0</version>
+				<executions>
+					<execution>
+						<phase>generate-resources</phase>
+						<goals>
+							<goal>write-project-properties</goal>
+						</goals>
+						<configuration>
+							<outputFile>${project.build.outputDirectory}/localzprojector-app.properties</outputFile>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
 
 	<dependencies>
 		<!-- ImageJ dependencies -->

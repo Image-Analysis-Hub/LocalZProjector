@@ -97,6 +97,7 @@ public class GuiController
 
 		final EverythingDisablerAndReenabler disabler = new EverythingDisablerAndReenabler( guiPanel, new Class[] { JLabel.class } );
 		disabler.disable();
+		guiPanel.runPanel.btnStop.setEnabled( true );
 		new Thread( () -> {
 			try
 			{
@@ -164,6 +165,7 @@ public class GuiController
 	{
 		final EverythingDisablerAndReenabler disabler = new EverythingDisablerAndReenabler( guiPanel, new Class[] { JLabel.class } );
 		disabler.disable();
+		guiPanel.runPanel.btnStop.setEnabled( true );
 		new Thread( () -> {
 			try
 			{
