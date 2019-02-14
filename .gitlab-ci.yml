@@ -40,7 +40,7 @@ cache:
     - ls -l $CI_PROJECT_DIR/
   artifacts:
     paths:
-    - $CI_PROJECT_DIR/modules/app.jar
+    - $CI_PROJECT_DIR/target/*.jar
 
 
 # For merge requests do not `deploy` but only run `verify`.
