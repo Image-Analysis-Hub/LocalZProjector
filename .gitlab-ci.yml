@@ -37,10 +37,10 @@ cache:
   stage: build
   script:
     - 'mvn $MAVEN_CLI_OPTS test-compile'
-    - ls -l $CI_PROJECT_DIR/
+    - ls -l $CI_PROJECT_DIR/target
   artifacts:
     paths:
-    - $CI_PROJECT_DIR/target/*.jar
+    - $CI_PROJECT_DIR/target/LocalZProjector-1.0.1-SNAPSHOT.jar
 
 
 # For merge requests do not `deploy` but only run `verify`.
