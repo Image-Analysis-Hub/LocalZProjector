@@ -36,7 +36,7 @@ cache:
 .validate: &validate
   stage: build
   script:
-    - 'mvn $MAVEN_CLI_OPTS test-compile'
+    - 'mvn $MAVEN_CLI_OPTS install'
     - ls -l $CI_PROJECT_DIR/target
   artifacts:
     paths:
