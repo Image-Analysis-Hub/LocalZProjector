@@ -37,6 +37,11 @@ cache:
   stage: build
   script:
     - 'mvn $MAVEN_CLI_OPTS test-compile'
+    - ls -l $CI_PROJECT_DIR/
+  artifacts:
+    paths:
+    - $CI_PROJECT_DIR/modules/app.jar
+
 
 # For merge requests do not `deploy` but only run `verify`.
 # See https://maven.apache.org/guides/introduction/introduction-to-the-lifecycle.html
@@ -56,15 +61,5 @@ validate:jdk8:
 verify:jdk8:
   <<: *verify
   image: maven:3.3.9-jdk-8
-
-# Artifacts
-.validate: &validate
-  stage: build
-  script:
-    - 'mvn $MAVEN_CLI_OPTS test-compile'
-    - ls -l $CI_PROJECT_DIR/
-  artifacts:
-    paths:
-    - $CI_PROJECT_DIR/modules/app.jar
 
 
