@@ -39,6 +39,7 @@ cache:
     - 'mvn $MAVEN_CLI_OPTS install'
     - ls -l $CI_PROJECT_DIR/target
   artifacts:
+    name: LocalZProjector
     paths:
     - $CI_PROJECT_DIR/target/LocalZProjector-1.0.1-SNAPSHOT.jar
 
