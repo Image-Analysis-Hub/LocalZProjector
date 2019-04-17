@@ -11,9 +11,10 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.commons.math3.stat.descriptive.StorelessUnivariateStatistic;
+import org.apache.commons.math3.stat.descriptive.AbstractUnivariateStatistic;
 import org.apache.commons.math3.stat.descriptive.moment.Mean;
 import org.apache.commons.math3.stat.descriptive.rank.Max;
+import org.apache.commons.math3.stat.descriptive.rank.Median;
 
 public class ExtractSurfaceParameters implements Serializable
 {
@@ -33,7 +34,11 @@ public class ExtractSurfaceParameters implements Serializable
 	/**
 	 * Take the mean intensity along Z.
 	 */
-	MEAN( "Mean" );
+	MEAN( "Mean" ),
+	/**
+	 * Take the median intensity along Z.
+	 */
+	MEDIAN("Median");
 
 		private final String str;
 
@@ -48,7 +53,7 @@ public class ExtractSurfaceParameters implements Serializable
 			return str;
 		}
 
-		public StorelessUnivariateStatistic projector()
+		public AbstractUnivariateStatistic projector()
 		{
 			switch ( this )
 			{
@@ -56,6 +61,8 @@ public class ExtractSurfaceParameters implements Serializable
 				return new Mean();
 			case MIP:
 				return new Max();
+			case MEDIAN:
+				return new Median();
 			default:
 				throw new IllegalArgumentException( "Unknown projection method: " + this + "." );
 

@@ -1,6 +1,7 @@
 package fr.pasteur.iah.localzprojector.process;
 
-import org.apache.commons.math3.stat.descriptive.StorelessUnivariateStatistic;
+import org.apache.commons.math3.stat.descriptive.AbstractUnivariateStatistic;
+import org.apache.commons.math3.util.ResizableDoubleArray;
 import org.scijava.Cancelable;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
@@ -72,10 +73,11 @@ public class ExtractSurfaceOp< T extends RealType< T > & NativeType< T > > exten
 	{
 		final int offset = params.offset( c );
 		final int deltaZ = params.deltaZ( c );
-		final StorelessUnivariateStatistic projector = params.projectionMethod( c ).projector();
+		final AbstractUnivariateStatistic projector = params.projectionMethod( c ).projector();
 		final Cursor< T > cursor = Views.iterable( target ).localizingCursor(); // 2D
 		final RandomAccess< UnsignedShortType > raReference = referenceSurface.randomAccess( referenceSurface ); // 2D
 		final RandomAccess< T > ra = channel.randomAccess( channel ); // 3D
+		final ResizableDoubleArray arr = new ResizableDoubleArray();
 
 		while ( cursor.hasNext() )
 		{
@@ -92,14 +94,14 @@ public class ExtractSurfaceOp< T extends RealType< T > & NativeType< T > > exten
 							raReference.get().get() + offset + deltaZ ) );
 
 
-			projector.clear();
+			arr.clear();
 			for ( long z = zmin; z <= zmax; z++ )
 			{
 				ra.setPosition( z, 2 );
-				projector.increment( ra.get().getRealDouble() );
+				arr.addElement( ra.get().getRealDouble() );
 
 			}
-			cursor.get().setReal( projector.getResult() );
+			cursor.get().setReal( projector.evaluate( arr.getElements() ) );
 		}
 	}
 
