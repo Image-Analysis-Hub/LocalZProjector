@@ -66,8 +66,9 @@ public class ReferenceSurfaceOp< T extends RealType< T > & NativeType< T > > ext
 		// Temp storage for filtered slice.
 		final Img< T > filtered = factory.create( binnedSize );
 
-		// Neighborhood for filtering.
-		final Shape shape = new RectangleShape( params.halfWindowSize, false );
+		// Neighborhood size for filtering on the binned image.
+		final int neighborhoodHalfSize = ( int ) Math.ceil( ( double ) params.filterWindowSize / params.binning / 2. );
+		final Shape shape = new RectangleShape( neighborhoodHalfSize, false );
 
 		// Binning op.
 		@SuppressWarnings( { "rawtypes", "unchecked" } )

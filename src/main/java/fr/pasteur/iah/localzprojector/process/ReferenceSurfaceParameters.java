@@ -16,7 +16,7 @@ public class ReferenceSurfaceParameters implements Serializable
 
 	public final Method method;
 
-	public final int halfWindowSize;
+	public final int filterWindowSize;
 
 	public final int zMin;
 
@@ -30,11 +30,11 @@ public class ReferenceSurfaceParameters implements Serializable
 
 	public final int binning;
 
-	private ReferenceSurfaceParameters( final int targetChannel, final Method method, final int halfWindowSize, final int zMin, final int zMax, final double sigma, final int medianSize, final int binning )
+	private ReferenceSurfaceParameters( final int targetChannel, final Method method, final int filterWindowSize, final int zMin, final int zMax, final double sigma, final int medianSize, final int binning )
 	{
 		this.targetChannel = targetChannel;
 		this.method = method;
-		this.halfWindowSize = halfWindowSize;
+		this.filterWindowSize = filterWindowSize;
 		this.zMin = zMin;
 		this.zMax = zMax;
 		this.sigma = sigma;
@@ -79,7 +79,7 @@ public class ReferenceSurfaceParameters implements Serializable
 
 		private int zMax = -1;
 
-		private int halfWindowSize = 10;
+		private int filterWindowSize = 10;
 
 		private double sigma = -1.;
 
@@ -107,9 +107,17 @@ public class ReferenceSurfaceParameters implements Serializable
 			return this;
 		}
 
-		public Builder halfWindowSize( final int halfWindowSize )
+		/**
+		 * The window size over which to filter, without taking into account the
+		 * binning value.
+		 * 
+		 * @param filterWindowSize
+		 *            the filter window size.
+		 * @return this builder.
+		 */
+		public Builder filterWindowSize( final int filterWindowSize )
 		{
-			this.halfWindowSize = halfWindowSize;
+			this.filterWindowSize = filterWindowSize;
 			return this;
 		}
 
@@ -153,7 +161,7 @@ public class ReferenceSurfaceParameters implements Serializable
 			return new ReferenceSurfaceParameters(
 					targetChannel,
 					method,
-					halfWindowSize,
+					filterWindowSize,
 					Math.min( zMin, zMax ),
 					Math.max( zMin, zMax ),
 					sigma,

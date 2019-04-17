@@ -206,10 +206,10 @@ public class ReferenceSurfacePanel extends JPanel
 				.targetChannel( ( ( Number ) spinnerModelChannel.getValue() ).intValue() )
 				.binning( ( ( Number ) spinnerModelBinning.getValue() ).intValue() )
 				.method( ( Method ) comboBoxMethod.getSelectedItem() )
-				.halfWindowSize( ( ( ( Number ) spinnerModelSize.getValue() ).intValue() - 1 ) / 2 )
+				.filterWindowSize( ( ( ( Number ) spinnerModelSize.getValue() ).intValue() ) )
 				.zMin( ( ( Number ) spinnerModelZMin.getValue() ).intValue() )
 				.zMax( ( ( Number ) spinnerModelZMax.getValue() ).intValue() )
-				.gaussianPreFilter( ((Number)ftfSigma.getValue() ).doubleValue() )
+				.gaussianPreFilter( ( ( Number ) ftfSigma.getValue() ).doubleValue() )
 				.medianPostFilterHalfSize( ( ( ( Number ) spinnerModelMedian.getValue() ).intValue() - 1 ) / 2 )
 				.get();
 	}
@@ -219,7 +219,7 @@ public class ReferenceSurfacePanel extends JPanel
 		spinnerModelChannel.setValue( Integer.valueOf( params.targetChannel ) );
 		spinnerModelBinning.setValue( Integer.valueOf( params.binning ) );
 		comboBoxMethod.setSelectedItem( params.method );
-		spinnerModelSize.setValue( Integer.valueOf( 2 * params.halfWindowSize + 1 ) );
+		spinnerModelSize.setValue( Integer.valueOf( params.filterWindowSize ) );
 		spinnerModelZMin.setValue( Integer.valueOf( params.zMin ) );
 		spinnerModelZMax.setValue( Integer.valueOf( params.zMax ) );
 		ftfSigma.setValue( Double.valueOf( params.sigma ) );

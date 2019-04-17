@@ -36,7 +36,7 @@ public class TestDriveGUI
 				.binning( 4 )
 				.zMin( 0 )
 				.zMax( 26 )
-				.halfWindowSize( 2 )
+				.filterWindowSize( 30 )
 				.gaussianPreFilter( 0.25 )
 				.medianPostFilterHalfSize( 20 )
 				.targetChannel( channel )
