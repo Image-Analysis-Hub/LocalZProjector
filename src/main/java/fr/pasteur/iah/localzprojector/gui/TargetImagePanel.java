@@ -9,6 +9,7 @@ import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
+import fr.pasteur.iah.localzprojector.util.GuiUtil;
 import net.imagej.Dataset;
 
 public class TargetImagePanel extends JPanel
@@ -29,55 +30,62 @@ public class TargetImagePanel extends JPanel
 	public TargetImagePanel()
 	{
 		final GridBagLayout gridBagLayout = new GridBagLayout();
-		gridBagLayout.columnWidths = new int[] { 114, 44, 0 };
-		gridBagLayout.rowHeights = new int[] { 0, 0, 0, 0, 0, 0, 0 };
-		gridBagLayout.columnWeights = new double[] { 0., 1.0, Double.MIN_VALUE };
-		gridBagLayout.rowWeights = new double[] { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE };
 		setLayout( gridBagLayout );
 
-		final JLabel lblTargetImage = new JLabel( "Target image.", JLabel.CENTER );
-		lblTargetImage.setFont( lblTargetImage.getFont().deriveFont( lblTargetImage.getFont().getSize() + 4f ) );
+		final JLabel lblTargetImage = new JLabel( "Target image:", JLabel.CENTER );
+		lblTargetImage.setFont( lblTargetImage.getFont().deriveFont( lblTargetImage.getFont().getSize() + 2f ) );
 		final GridBagConstraints c = new GridBagConstraints();
 		c.gridwidth = 2;
-		c.fill = GridBagConstraints.HORIZONTAL;
-		c.insets = new Insets( 5, 5, 5, 5 );
+		c.weightx = 1.;
+		c.insets = new Insets( 2, 5, 2, 5 );
 		c.gridx = 0;
 		c.gridy = 0;
 		add( lblTargetImage, c );
 
 		this.labelImage = new JLabel( "", JLabel.CENTER );
-		labelImage.setFont( labelImage.getFont().deriveFont( Font.ITALIC ) );
-		c.gridy++;
+		c.gridx = 2;
+		c.gridwidth = 5;
 		add( labelImage, c );
 
+		c.gridx = 0;
 		c.gridy++;
 		c.gridwidth = 1;
+		c.anchor = GridBagConstraints.EAST;
 		add( new JLabel( "N channels:" ), c );
 
-		c.gridx = 1;
+		c.gridx++;
+		c.anchor = GridBagConstraints.WEST;
 		this.labelNC = new JLabel();
 		add( labelNC, c );
 
-		c.gridy++;
-		c.gridx = 0;
+		c.gridx++;
+		c.anchor = GridBagConstraints.EAST;
 		add( new JLabel( "N Z-slices:" ), c );
 
-		c.gridx = 1;
+		c.gridx++;
+		c.anchor = GridBagConstraints.WEST;
 		this.labelNZ = new JLabel();
 		add( labelNZ, c );
 
-		c.gridy++;
-		c.gridx = 0;
+		c.gridx++;
+		c.anchor = GridBagConstraints.EAST;
 		add( new JLabel( "N time-points:" ), c );
 
-		c.gridx = 1;
+		c.gridx++;
+		c.anchor = GridBagConstraints.WEST;
 		this.labelNT = new JLabel();
 		add( labelNT, c );
 
-		c.gridy++;
-		c.gridx = 0;
+		c.gridx++;
+		c.anchor = GridBagConstraints.WEST;
 		this.btnRefresh = new JButton( "refresh" );
 		add( btnRefresh, c );
+
+		// Change font size - more compact.
+		final Font lblFont = getFont().deriveFont( getFont().getSize2D() - 2f );
+		GuiUtil.changeFont( this, lblFont, JLabel.class, lblTargetImage );
+		GuiUtil.changeFont( this, lblFont, JButton.class );
+		labelImage.setFont( labelImage.getFont().deriveFont( Font.ITALIC ) );
 	}
 
 	void refresh( final Dataset dataset )

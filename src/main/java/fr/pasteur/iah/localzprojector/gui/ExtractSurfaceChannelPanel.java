@@ -1,6 +1,7 @@
 package fr.pasteur.iah.localzprojector.gui;
 
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -33,12 +34,14 @@ public class ExtractSurfaceChannelPanel extends JPanel
 	public ExtractSurfaceChannelPanel( final int channel, final int nZSlices )
 	{
 		this.channel = channel;
-		setBorder( new TitledBorder( new LineBorder( new Color( 192, 192, 192 ), 1, true ), "Ch" + channel, TitledBorder.LEADING, TitledBorder.TOP, null, null ) );
+
+		final Font lblFont = getFont().deriveFont( getFont().getSize2D() - 2f );
+		setBorder( new TitledBorder( new LineBorder( new Color( 192, 192, 192 ), 1, true ), "Ch" + channel, TitledBorder.LEADING, TitledBorder.TOP, lblFont, null ) );
 		final GridBagLayout gridBagLayout = new GridBagLayout();
 		setLayout( gridBagLayout );
 
 		final GridBagConstraints c = new GridBagConstraints();
-		c.insets = new Insets( 5, 5, 5, 5 );
+		c.insets = new Insets( 2, 2, 2, 2 );
 		c.anchor = GridBagConstraints.EAST;
 		c.gridx = 0;
 		c.gridy = 0;

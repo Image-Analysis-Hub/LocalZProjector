@@ -1,5 +1,6 @@
 package fr.pasteur.iah.localzprojector.gui;
 
+import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -28,6 +29,7 @@ import javax.swing.filechooser.FileFilter;
 
 import fr.pasteur.iah.localzprojector.process.ReferenceSurfaceParameters;
 import fr.pasteur.iah.localzprojector.process.ReferenceSurfaceParameters.Method;
+import fr.pasteur.iah.localzprojector.util.GuiUtil;
 
 public class ReferenceSurfacePanel extends JPanel
 {
@@ -82,13 +84,13 @@ public class ReferenceSurfacePanel extends JPanel
 		final GridBagConstraints c = new GridBagConstraints();
 		c.fill = GridBagConstraints.HORIZONTAL;
 		c.gridwidth = 2;
-		c.insets = new Insets( 5, 5, 5, 5 );
+		c.insets = new Insets( 2, 5, 2, 5 );
 		c.gridx = 0;
 		c.gridy = 0;
 
 		final JLabel lblReferenceSurface = new JLabel( "Reference surface." );
 		lblReferenceSurface.setHorizontalAlignment( JLabel.CENTER );
-		lblReferenceSurface.setFont( lblReferenceSurface.getFont().deriveFont( lblReferenceSurface.getFont().getSize() + 4f ) );
+		lblReferenceSurface.setFont( lblReferenceSurface.getFont().deriveFont( lblReferenceSurface.getFont().getSize() + 2f ) );
 		add( lblReferenceSurface, c );
 
 		c.gridy++;
@@ -108,16 +110,21 @@ public class ReferenceSurfacePanel extends JPanel
 		this.spinnerModelBinning = new SpinnerNumberModel( 1, 1, 100, 1 );
 		add( new JSpinner( spinnerModelBinning ), c );
 
-		c.gridx = 0;
-		c.gridy++;
-		add( new JLabel( "Method:" ), c );
-
-		c.gridx = 1;
+		final JPanel methodPanel = new JPanel();
+		final BoxLayout boxLayout = new BoxLayout( methodPanel, BoxLayout.LINE_AXIS );
+		methodPanel.setLayout( boxLayout );
+		methodPanel.add( new JLabel( "Method:" ) );
+		methodPanel.add( Box.createHorizontalGlue() );
 		comboBoxMethod = new JComboBox<>( Method.values() );
-		add( comboBoxMethod, c );
+		methodPanel.add( comboBoxMethod );
+		c.gridx = 0;
+		c.gridwidth = 2;
+		c.gridy++;
+		add( methodPanel, c );
 
 		c.gridx = 0;
 		c.gridy++;
+		c.gridwidth = 1;
 		add( new JLabel( "Neighborhood size (pixels):" ), c );
 
 		c.gridx = 1;
@@ -177,6 +184,13 @@ public class ReferenceSurfacePanel extends JPanel
 		panelButtons.add( btnLoadParams );
 		panelButtons.add( Box.createHorizontalGlue() );
 		panelButtons.add( btnSaveParams );
+
+		// Change font size - more compact.
+		final Font lblFont = getFont().deriveFont( getFont().getSize2D() - 2f );
+		GuiUtil.changeFont( this, lblFont, JLabel.class, lblReferenceSurface );
+		GuiUtil.changeFont( this, lblFont, JComboBox.class );
+		GuiUtil.changeFont( this, lblFont, JSpinner.class );
+		GuiUtil.changeFont( this, lblFont, JTextField.class );
 
 		/*
 		 * Listeners.

@@ -1,11 +1,9 @@
 package fr.pasteur.iah.localzprojector.gui;
 
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+import javax.swing.BoxLayout;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -34,6 +32,8 @@ public class GuiPanel extends JPanel
 
 	private Dataset dataset;
 
+	private JPanel middlePanel;
+
 	/**
 	 * Creates the GUI panel.
 	 *
@@ -60,66 +60,54 @@ public class GuiPanel extends JPanel
 			final Consumer< Boolean > localProjectionRunner,
 			final Runnable stopper )
 	{
-		final GridBagLayout gridBagLayout = new GridBagLayout();
-		gridBagLayout.columnWeights = new double[] { 1. };
-		gridBagLayout.rowWeights = new double[] { 0., 0., 0., 0., 0., 0., 0., 1. };
-		gridBagLayout.rowHeights = new int[] { 0, 20, 0, 20, 0, 20 };
-		setLayout( gridBagLayout );
-
-		final GridBagConstraints c = new GridBagConstraints();
-		c.fill = GridBagConstraints.BOTH;
-		c.anchor = GridBagConstraints.CENTER;
-		c.insets = new Insets( 5, 10, 5, 10 );
-		c.gridwidth = 1;
-		c.gridx = 0;
-		c.gridy = 0;
+		final BoxLayout boxLayout = new BoxLayout( this, BoxLayout.PAGE_AXIS );
+		setLayout( boxLayout );
 
 		/*
-		 * Title. y = 0.
+		 * Title.
 		 */
 
 		final JLabel lblTitle = new JLabel( "<html>\n<center>\n<big>Local Z Projector.</big>\n<p>\nv" + AppUtil.getVersion() + "\n</center>\n</html>" );
 		lblTitle.setHorizontalAlignment( SwingConstants.CENTER );
-		add( lblTitle, c );
+		lblTitle.setAlignmentX( 0.5f );
+		add( lblTitle );
 
 		/*
-		 * Separator. y = 1.
+		 * Separator.
 		 */
 
-		c.gridy++;
-		c.fill = GridBagConstraints.HORIZONTAL;
-		add( new JSeparator(), c );
+		add( new JSeparator() );
 
 		/*
-		 * Target image panel. y = 2.
+		 * Target image panel.
 		 */
 
-		c.gridy++;
-		c.fill = GridBagConstraints.BOTH;
 		targetImagePanel = new TargetImagePanel();
-		add( targetImagePanel, c );
+		add( targetImagePanel );
 		targetImagePanel.btnRefresh.addActionListener( l -> refreshDataset( datasetSupplier.get() ) );
 
 		/*
-		 * Separator. y = 3.
+		 * Separator.
 		 */
 
-		c.gridy++;
-		c.fill = GridBagConstraints.HORIZONTAL;
-		add( new JSeparator(), c );
+		add( new JSeparator() );
 
 		/*
-		 * Button panel. y = 7.
+		 * Middle panel.
 		 */
 
-		c.gridy += 4;
-		c.anchor = GridBagConstraints.SOUTH;
-		add( new JSeparator(), c );
+		this.middlePanel = new JPanel();
+		middlePanel.setLayout( new BoxLayout( middlePanel, BoxLayout.LINE_AXIS ) );
+		add( middlePanel );
 
-		c.gridy++;
-		c.fill = GridBagConstraints.BOTH;
+		/*
+		 * Button panel.
+		 */
+
+		add( new JSeparator() );
+
 		this.runPanel = new RunPanel();
-		add( runPanel, c );
+		add( runPanel );
 
 		/*
 		 * Check
@@ -140,10 +128,7 @@ public class GuiPanel extends JPanel
 	private void refreshDataset( final Dataset dataset )
 	{
 		this.dataset = dataset;
-		if ( null != referenceSurfacePanel )
-			remove( referenceSurfacePanel );
-		if ( null != extractSurfacePanel )
-			remove( extractSurfacePanel );
+		middlePanel.removeAll();
 
 		targetImagePanel.refresh( dataset );
 		if ( null == dataset )
@@ -152,44 +137,27 @@ public class GuiPanel extends JPanel
 		final int nChannels = ( int ) dataset.getChannels();
 		final int nZSlices = ( int ) dataset.getDepth();
 
-		final GridBagConstraints c = new GridBagConstraints();
-		c.fill = GridBagConstraints.BOTH;
-		c.anchor = GridBagConstraints.CENTER;
-		c.insets = new Insets( 5, 10, 5, 10 );
-		c.gridwidth = 1;
-		c.gridx = 0;
 
 		/*
-		 * Reference plane panel. y = 4.
+		 * Reference plane panel.
 		 */
 
 		referenceSurfacePanel = new ReferenceSurfacePanel( nChannels, nZSlices );
-		c.gridy = 4;
-		add( referenceSurfacePanel, c );
+		middlePanel.add( referenceSurfacePanel );
 
 		/*
-		 * Separator. y = 5.
+		 * Separator.
 		 */
 
-		c.gridy++;
-		c.fill = GridBagConstraints.HORIZONTAL;
-		add( new JSeparator(), c );
+		middlePanel.add( new JSeparator( JSeparator.VERTICAL ) );
 
 		/*
-		 * Local projection panel. y = 6.
+		 * Local projection panel.
 		 */
 
-		c.gridy++;
-		c.fill = GridBagConstraints.BOTH;
 		extractSurfacePanel = new ExtractSurfacePanel( nChannels, nZSlices );
-		add( extractSurfacePanel, c );
+		middlePanel.add( extractSurfacePanel );
 
-		/*
-		 * Pack
-		 */
-
-		revalidate();
-		repaint();
 	}
 
 	public ReferenceSurfaceParameters getReferenceSurfaceParameters()

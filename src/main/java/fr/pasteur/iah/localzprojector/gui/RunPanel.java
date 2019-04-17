@@ -53,7 +53,7 @@ public class RunPanel extends JPanel
 		setLayout( gridBagLayout );
 
 		final JLabel lblTitle = new JLabel( "Execute." );
-		lblTitle.setFont( lblTitle.getFont().deriveFont( 4f + lblTitle.getFont().getSize2D() ) );
+		lblTitle.setFont( lblTitle.getFont().deriveFont( 2f + lblTitle.getFont().getSize2D() ) );
 		final GridBagConstraints gbc_lblNewLabel = new GridBagConstraints();
 		gbc_lblNewLabel.gridwidth = 2;
 		gbc_lblNewLabel.insets = new Insets( 0, 0, 5, 5 );

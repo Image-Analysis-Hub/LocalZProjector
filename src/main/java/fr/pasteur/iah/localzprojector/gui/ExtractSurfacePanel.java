@@ -1,5 +1,6 @@
 package fr.pasteur.iah.localzprojector.gui;
 
+import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -13,17 +14,21 @@ import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JSpinner;
+import javax.swing.JTextField;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.filechooser.FileFilter;
 
 import fr.pasteur.iah.localzprojector.process.ExtractSurfaceParameters;
 import fr.pasteur.iah.localzprojector.process.ExtractSurfaceParameters.Builder;
+import fr.pasteur.iah.localzprojector.util.GuiUtil;
 
 public class ExtractSurfacePanel extends JPanel
 {
@@ -58,33 +63,44 @@ public class ExtractSurfacePanel extends JPanel
 	public ExtractSurfacePanel( final int nChannels, final int nZSlices )
 	{
 		final GridBagLayout gridBagLayout = new GridBagLayout();
-		gridBagLayout.columnWeights = new double[] { 1. };
-		gridBagLayout.rowWeights = new double[] { 0., 0., 1. };
-		gridBagLayout.rowHeights = new int[] { 0, 200 };
 		setLayout( gridBagLayout );
 
 		final GridBagConstraints c = new GridBagConstraints();
 		c.fill = GridBagConstraints.HORIZONTAL;
-		c.insets = new Insets( 5, 5, 5, 5 );
+		c.insets = new Insets( 2, 5, 2, 5 );
 		c.gridx = 0;
 		c.gridy = 0;
 
-		final JLabel lblLocalProjection = new JLabel( "Extract surface." );
+		final JLabel lblLocalProjection = new JLabel( "Extract projection." );
 		lblLocalProjection.setHorizontalAlignment( JLabel.CENTER );
-		lblLocalProjection.setFont( lblLocalProjection.getFont().deriveFont( lblLocalProjection.getFont().getSize() + 4f ) );
+		lblLocalProjection.setFont( lblLocalProjection.getFont().deriveFont( lblLocalProjection.getFont().getSize() + 2f ) );
 		add( lblLocalProjection, c );
 
 		final JPanel panelChannels = new JPanel();
 		final BoxLayout layout = new BoxLayout( panelChannels, BoxLayout.LINE_AXIS );
 		panelChannels.setLayout( layout );
 
+		this.channels = new ArrayList<>();
+		for ( int channel = 0; channel < nChannels; channel++ )
+		{
+			panelChannels.add( Box.createHorizontalStrut( 5 ) );
+			final ExtractSurfaceChannelPanel ci = new ExtractSurfaceChannelPanel( channel, nZSlices );
+			channels.add( ci );
+			panelChannels.add( ci );
+			panelChannels.add( Box.createHorizontalStrut( 1 ) );
+		}
+
 		final JScrollPane scrollPane = new JScrollPane( panelChannels, JScrollPane.VERTICAL_SCROLLBAR_NEVER, JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS );
 		scrollPane.setBorder( null );
 		c.gridy++;
 		c.fill = GridBagConstraints.BOTH;
+		c.weightx = 1.;
+		c.weighty = 1.;
 		add( scrollPane, c );
 
 		final JPanel panelButtons = new JPanel();
+		c.weightx = 0.;
+		c.weighty = 0.;
 		c.gridy++;
 		c.gridy++;
 		c.anchor = GridBagConstraints.SOUTH;
@@ -100,15 +116,12 @@ public class ExtractSurfacePanel extends JPanel
 		panelButtons.add( Box.createHorizontalGlue() );
 		panelButtons.add( btnSaveParams );
 
-		this.channels = new ArrayList<>();
-		for ( int channel = 0; channel < nChannels; channel++ )
-		{
-			panelChannels.add( Box.createHorizontalStrut( 5 ) );
-			final ExtractSurfaceChannelPanel ci = new ExtractSurfaceChannelPanel( channel, nZSlices );
-			channels.add( ci );
-			panelChannels.add( ci );
-			panelChannels.add( Box.createHorizontalStrut( 5 ) );
-		}
+		// Change font size - more compact.
+		final Font lblFont = getFont().deriveFont( getFont().getSize2D() - 2f );
+		GuiUtil.changeFont( this, lblFont, JLabel.class, lblLocalProjection );
+		GuiUtil.changeFont( this, lblFont, JComboBox.class );
+		GuiUtil.changeFont( this, lblFont, JSpinner.class );
+		GuiUtil.changeFont( this, lblFont, JTextField.class );
 
 		/*
 		 * Listeners.
