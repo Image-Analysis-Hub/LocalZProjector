@@ -1,5 +1,9 @@
 package fr.pasteur.iah.localzprojector.process;
 
+import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
 import org.scijava.Cancelable;
 import org.scijava.ItemIO;
 import org.scijava.app.StatusService;
@@ -7,6 +11,8 @@ import org.scijava.display.DisplayService;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 
+import io.scif.config.SCIFIOConfig;
+import io.scif.services.DatasetIOService;
 import net.imagej.Dataset;
 import net.imagej.DefaultDataset;
 import net.imagej.ImgPlus;
@@ -19,9 +25,12 @@ import net.imagej.ops.special.function.Functions;
 import net.imglib2.FinalDimensions;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.img.Img;
+import net.imglib2.img.ImgFactory;
+import net.imglib2.img.ImgView;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.type.numeric.integer.UnsignedShortType;
+import net.imglib2.util.Util;
 import net.imglib2.view.IntervalView;
 import net.imglib2.view.Views;
 
@@ -41,13 +50,22 @@ public class LocalZProjectionOp< T extends RealType< T > & NativeType< T > > ext
 	@Parameter( type = ItemIO.INPUT, required = false )
 	private boolean showOutputDuringCalculation = false;
 
+	@Parameter( type = ItemIO.INPUT, required = false )
+	private boolean saveAtEachTimePoint = true; // DEBUG
+
+	@Parameter( type = ItemIO.INPUT, required = false )
+	private String saveFolder = System.getProperty( "user.home" );
+
 	@Parameter
 	private DisplayService displayService;
 
-	private String cancelReason;
-
 	@Parameter
 	private StatusService status;
+
+	@Parameter
+	private DatasetIOService ioService;
+
+	private String cancelReason;
 
 	private Cancelable cancelable;
 
@@ -74,7 +92,7 @@ public class LocalZProjectionOp< T extends RealType< T > & NativeType< T > > ext
 		final long[] dims = new long[ input.numDimensions() - 1 ];
 		for ( int d = 0; d < input.numDimensions(); d++ )
 		{
-			if (d == zAxis)
+			if ( d == zAxis )
 				continue;
 			dims[ id ] = input.dimension( d );
 			axes[ id++ ] = input.axis( d );
@@ -195,6 +213,66 @@ public class LocalZProjectionOp< T extends RealType< T > & NativeType< T > > ext
 			if ( showOutputDuringCalculation )
 				output.update();
 
+			/*
+			 * Save at each time-point.
+			 */
+
+			if ( saveAtEachTimePoint )
+			{
+				// TODO
+				final String inputName = input.getName().substring( 0, input.getName().lastIndexOf( '.' ) );
+				final int ndigits = Long.toString( nFrames ).length();
+				// Save reference surface if asked.
+				if ( showReferenceSurface )
+				{
+					final String refTpName = String.format( "%s_RefSurface_%" + ndigits + "d", inputName, t );
+					
+					final CalibratedAxis[] axesRefSurface = new CalibratedAxis[ 2 ];
+					axesRefSurface[ 0 ] = input.getImgPlus().axis( input.getImgPlus().dimensionIndex( Axes.X ) );
+					axesRefSurface[ 1 ] = input.getImgPlus().axis( input.getImgPlus().dimensionIndex( Axes.Y ) );
+
+					final ImgPlus< UnsignedShortType > imgPlus = new ImgPlus<>( referenceSurface, refTpName, axesRefSurface );
+					final Dataset refSurfaceDataset = new DefaultDataset( ioService.context(), imgPlus );
+
+					final Path destination = Paths.get( saveFolder, refTpName + ".tif" );
+					try
+					{
+						ioService.save( refSurfaceDataset, destination.toString() );
+					}
+					catch ( final IOException e )
+					{
+						e.printStackTrace();
+					}
+				}
+
+				final String outputTpName = String.format( "%s_LocalProjection_%" + ndigits + "d", inputName, t );
+				final CalibratedAxis[] outputTpAxes = new CalibratedAxis[ outputSlice.numDimensions() ];
+				// Remove T
+				int id2 = 0;
+				for ( int d = 0; d < outImgPlus.numDimensions(); d++ )
+				{
+					if ( d == outImgPlus.dimensionIndex( Axes.TIME ) )
+						continue;
+					outputTpAxes[ id2++ ] = outImgPlus.axis( d );
+				}
+
+				final ImgPlus< T > imgPlus = new ImgPlus< T >( wrapToImgPlus( outputSlice ), outputTpName, outputTpAxes );
+				final Dataset outputTpDataset = new DefaultDataset( ioService.context(), imgPlus );
+
+				final Path destination = Paths.get( saveFolder, outputTpName + ".tif" );
+				try
+				{
+					final SCIFIOConfig config = new SCIFIOConfig()
+							.imgSaverSetWriteRGB( false );
+					ioService.save( outputTpDataset, destination.toString(), config );
+				}
+				catch ( final IOException e )
+				{
+					e.printStackTrace();
+				}
+
+			}
+
 			status.showProgress( ( int ) t, ( int ) nFrames );
 		}
 
@@ -271,6 +349,29 @@ public class LocalZProjectionOp< T extends RealType< T > & NativeType< T > > ext
 		}
 		final ImgPlus< T > imgPlus = new ImgPlus<>( copy, "Time-point " + t + "  of " + img.getName(), axes );
 		return imgPlus;
+	}
+
+	private ImgPlus< T > wrapToImgPlus(
+			final RandomAccessibleInterval< T > rai )
+	{
+		if ( rai instanceof ImgPlus )
+			return ( ImgPlus< T > ) rai;
+		return new ImgPlus<>( wrapToImg( rai ) );
+	}
+
+	private Img< T > wrapToImg(
+			final RandomAccessibleInterval< T > rai )
+	{
+		if ( rai instanceof Img )
+			return ( Img< T > ) rai;
+		return ImgView.wrap( rai, imgFactory( rai ) );
+	}
+
+	private ImgFactory< T > imgFactory(
+			final RandomAccessibleInterval< T > rai )
+	{
+		final T type = Util.getTypeFromInterval( rai );
+		return Util.getSuitableImgFactory( rai, type );
 	}
 
 	@Override
