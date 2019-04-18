@@ -7,8 +7,6 @@ import java.util.Properties;
 public class AppUtil
 {
 
-	private static final String PROPERTIES_FILE_PATH = "../../../../../localzprojector-app.properties";
-
 	/**
 	 * Returns the artifact version, as stored in the Maven pom.xml of this
 	 * project. For this to work, the pom must include a section where said
@@ -18,7 +16,7 @@ public class AppUtil
 	 */
 	public static String getVersion()
 	{
-		final InputStream is = AppUtil.class.getResourceAsStream( PROPERTIES_FILE_PATH );
+		final InputStream is = AppUtil.class.getResourceAsStream( "localzprojector-app.properties" );
 		if (null == is)
 			return "could not find app property file";
 		final Properties p = new Properties();
