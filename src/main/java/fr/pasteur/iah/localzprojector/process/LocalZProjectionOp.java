@@ -11,7 +11,6 @@ import org.scijava.display.DisplayService;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 
-import io.scif.config.SCIFIOConfig;
 import io.scif.services.DatasetIOService;
 import net.imagej.Dataset;
 import net.imagej.DefaultDataset;
@@ -51,7 +50,7 @@ public class LocalZProjectionOp< T extends RealType< T > & NativeType< T > > ext
 	private boolean showOutputDuringCalculation = false;
 
 	@Parameter( type = ItemIO.INPUT, required = false )
-	private boolean saveAtEachTimePoint = true; // DEBUG
+	private boolean saveAtEachTimePoint = false;
 
 	@Parameter( type = ItemIO.INPUT, required = false )
 	private String saveFolder = System.getProperty( "user.home" );
@@ -262,9 +261,7 @@ public class LocalZProjectionOp< T extends RealType< T > & NativeType< T > > ext
 				final Path destination = Paths.get( saveFolder, outputTpName + ".tif" );
 				try
 				{
-					final SCIFIOConfig config = new SCIFIOConfig()
-							.imgSaverSetWriteRGB( false );
-					ioService.save( outputTpDataset, destination.toString(), config );
+					ioService.save( outputTpDataset, destination.toString() );
 				}
 				catch ( final IOException e )
 				{
