@@ -28,9 +28,9 @@ public class RunPanel extends JPanel
 
 	private final static ImageIcon LOCAL_PROJECTION_ICON = new ImageIcon( RunPanel.class.getResource( "bullet_arrow_bottom.png" ) );
 
-	private final static ImageIcon START_ICON = new ImageIcon( RunPanel.class.getResource( "control_start_blue.png" ) );
+	private final static ImageIcon START_ICON = new ImageIcon( RunPanel.class.getResource( "control_play_blue.png" ) );
 
-	private final static ImageIcon STOP_ICON = new ImageIcon( RunPanel.class.getResource( "stop.png" ) );
+	private final static ImageIcon STOP_ICON = new ImageIcon( RunPanel.class.getResource( "control_stop_blue.png" ) );
 
 	private static final boolean DEFAULT_SHOW_REFERENCE_PLANE_MOVIE = false;
 
