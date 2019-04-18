@@ -11,7 +11,7 @@
 	</parent>
 
 	<artifactId>LocalZProjector</artifactId>
-	<version>1.0.1-SNAPSHOT</version>
+	<version>1.1.0</version>
 	<name>plugins/LocalZProjector_.jar</name>
 	<description>A Fiji tool to perform local Z projection.</description>
 	<url>http://imagej.net/Welcome</url>
@@ -53,7 +53,7 @@
 							<goal>write-project-properties</goal>
 						</goals>
 						<configuration>
-							<outputFile>${project.build.outputDirectory}/localzprojector-app.properties</outputFile>
+							<outputFile>${project.build.outputDirectory}/fr/pasteur/iah/localzprojector/util/localzprojector-app.properties</outputFile>
 						</configuration>
 					</execution>
 				</executions>
