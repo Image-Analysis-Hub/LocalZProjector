@@ -11,7 +11,7 @@
 	</parent>
 
 	<artifactId>LocalZProjector</artifactId>
-	<version>1.1.0</version>
+	<version>1.1.1-SNAPSHOT</version>
 	<name>plugins/LocalZProjector_.jar</name>
 	<description>A Fiji tool to perform local Z projection.</description>
 	<url>http://imagej.net/Welcome</url>
