@@ -48,8 +48,6 @@ public class GuiPanel extends JPanel
 	 *            checkbox 'Display reference plane' is checked.
 	 * @param localProjectionRunner
 	 *            function to run when the 'Local projection' button is pressed.
-	 *            The boolean returned is <code>true</code> if the checkbox
-	 *            'Display reference plane' is checked.
 	 * @param stopper
 	 *            function to run with the 'Stop' button is pressed.
 	 */
@@ -57,7 +55,7 @@ public class GuiPanel extends JPanel
 			final Supplier< Dataset > datasetSupplier,
 			final Runnable previewReferencePlaneRunner,
 			final Consumer< Boolean > previewLocalProjectionRunner,
-			final Consumer< Boolean > localProjectionRunner,
+			final Runnable localProjectionRunner,
 			final Runnable stopper )
 	{
 		final BoxLayout boxLayout = new BoxLayout( this, BoxLayout.PAGE_AXIS );
@@ -121,7 +119,7 @@ public class GuiPanel extends JPanel
 
 		runPanel.btnPreviewReferencePlane.addActionListener( l -> previewReferencePlaneRunner.run() );
 		runPanel.btnPreviewLocalProjection.addActionListener( l -> previewLocalProjectionRunner.accept( runPanel.showReferenceSurfacePreview() ) );
-		runPanel.btnRun.addActionListener( l -> localProjectionRunner.accept( runPanel.showReferenceSurfaceMovie() ) );
+		runPanel.btnRun.addActionListener( l -> localProjectionRunner.run() );
 		runPanel.btnStop.addActionListener( l -> stopper.run() );
 	}
 

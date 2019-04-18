@@ -1,16 +1,21 @@
 package fr.pasteur.iah.localzprojector.gui;
 
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.event.ItemListener;
 
+import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JTextField;
 import javax.swing.border.LineBorder;
 import javax.swing.border.TitledBorder;
 
@@ -31,6 +36,28 @@ public class RunPanel extends JPanel
 
 	private static final boolean DEFAULT_SHOW_REFERENCE_PLANE_PREVIEW = false;
 
+	private static final JFileChooser chooser = new JFileChooser()
+	{
+
+		private static final long serialVersionUID = 1L;
+
+		@Override
+		public void approveSelection()
+		{
+			if ( getSelectedFile().isFile() )
+			{
+				return;
+			}
+			else
+				super.approveSelection();
+		}
+	};
+	static
+	{
+		chooser.setDialogTitle( "Select a folder to save in" );
+		chooser.setFileSelectionMode( JFileChooser.FILES_AND_DIRECTORIES );
+	}
+
 	final JButton btnRun;
 
 	final JButton btnStop;
@@ -43,12 +70,24 @@ public class RunPanel extends JPanel
 
 	private final JCheckBox chckbxShowReferenceFrame;
 
+	private JCheckBox chckbxSaveEachTimepoint;
+
+	private JButton btnBrowse;
+
+	private JTextField textField;
+
+	private JPanel panelBrowse;
+
+	private JLabel lblSaveTo;
+
+	private Component horizontalGlue;
+
 	public RunPanel()
 	{
 		final GridBagLayout gridBagLayout = new GridBagLayout();
 		gridBagLayout.columnWidths = new int[] { 239, 0, 0 };
 		gridBagLayout.rowHeights = new int[] { 40, 129, 0 };
-		gridBagLayout.columnWeights = new double[] { 1.0, 1.0, Double.MIN_VALUE };
+		gridBagLayout.columnWeights = new double[] { 0.0, 1.0, Double.MIN_VALUE };
 		gridBagLayout.rowWeights = new double[] { 0.0, 1.0, Double.MIN_VALUE };
 		setLayout( gridBagLayout );
 
@@ -122,16 +161,99 @@ public class RunPanel extends JPanel
 		gbc_panelRun.gridx = 1;
 		gbc_panelRun.gridy = 1;
 		add( panelRun, gbc_panelRun );
-		panelRun.setLayout( new BoxLayout( panelRun, BoxLayout.Y_AXIS ) );
+		final GridBagLayout gbl_panelRun = new GridBagLayout();
+		gbl_panelRun.columnWidths = new int[] { 252, 0 };
+		gbl_panelRun.rowHeights = new int[] { 28, 23, 23, 0, 0, 0, 0 };
+		gbl_panelRun.columnWeights = new double[] { 1.0, Double.MIN_VALUE };
+		gbl_panelRun.rowWeights = new double[] { 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, Double.MIN_VALUE };
+		panelRun.setLayout( gbl_panelRun );
 
+		final JPanel panelButton = new JPanel();
+		panelButton.setLayout( new BoxLayout( panelButton, BoxLayout.X_AXIS ) );
 		btnRun = new JButton( "Run", START_ICON );
-		panelRun.add( btnRun );
-
+		panelButton.add( btnRun );
+		panelButton.add( Box.createHorizontalGlue() );
 		btnStop = new JButton( "Stop", STOP_ICON );
-		panelRun.add( btnStop );
+		panelButton.add( btnStop );
+
+		final GridBagConstraints gbc_panelButton = new GridBagConstraints();
+		gbc_panelButton.fill = GridBagConstraints.HORIZONTAL;
+		gbc_panelButton.insets = new Insets( 0, 0, 5, 0 );
+		gbc_panelButton.gridx = 0;
+		gbc_panelButton.gridy = 0;
+		panelRun.add( panelButton, gbc_panelButton );
 
 		this.chckbxShowReferenceFrame = new JCheckBox( "Show reference plane movie", DEFAULT_SHOW_REFERENCE_PLANE_MOVIE );
-		panelRun.add( chckbxShowReferenceFrame );
+		final GridBagConstraints gbc_chckbxShowReferenceFrame = new GridBagConstraints();
+		gbc_chckbxShowReferenceFrame.anchor = GridBagConstraints.WEST;
+		gbc_chckbxShowReferenceFrame.insets = new Insets( 0, 0, 5, 0 );
+		gbc_chckbxShowReferenceFrame.gridx = 0;
+		gbc_chckbxShowReferenceFrame.gridy = 1;
+		panelRun.add( chckbxShowReferenceFrame, gbc_chckbxShowReferenceFrame );
+
+		chckbxSaveEachTimepoint = new JCheckBox( "Save each time-point" );
+		final GridBagConstraints gbc_chckbxSaveEachTimepoint = new GridBagConstraints();
+		gbc_chckbxSaveEachTimepoint.insets = new Insets( 0, 0, 5, 0 );
+		gbc_chckbxSaveEachTimepoint.anchor = GridBagConstraints.WEST;
+		gbc_chckbxSaveEachTimepoint.gridx = 0;
+		gbc_chckbxSaveEachTimepoint.gridy = 2;
+		panelRun.add( chckbxSaveEachTimepoint, gbc_chckbxSaveEachTimepoint );
+
+		panelBrowse = new JPanel();
+		final GridBagConstraints gbc_panelBrowse = new GridBagConstraints();
+		gbc_panelBrowse.insets = new Insets( 0, 0, 5, 0 );
+		gbc_panelBrowse.fill = GridBagConstraints.BOTH;
+		gbc_panelBrowse.gridx = 0;
+		gbc_panelBrowse.gridy = 3;
+		panelRun.add( panelBrowse, gbc_panelBrowse );
+		panelBrowse.setLayout( new BoxLayout( panelBrowse, BoxLayout.X_AXIS ) );
+
+		lblSaveTo = new JLabel( "Save to:" );
+		panelBrowse.add( lblSaveTo );
+
+		horizontalGlue = Box.createHorizontalGlue();
+		panelBrowse.add( horizontalGlue );
+
+		btnBrowse = new JButton( "Browse" );
+		btnBrowse.addActionListener( l -> browse() );
+		panelBrowse.add( btnBrowse );
+
+		textField = new JTextField();
+		textField.setFont( getFont().deriveFont( getFont().getSize2D() - 2f ) );
+		final GridBagConstraints gbc_textField = new GridBagConstraints();
+		gbc_textField.insets = new Insets( 0, 0, 5, 0 );
+		gbc_textField.fill = GridBagConstraints.HORIZONTAL;
+		gbc_textField.gridx = 0;
+		gbc_textField.gridy = 4;
+		panelRun.add( textField, gbc_textField );
+		textField.setColumns( 10 );
+
+		/*
+		 * Wire listeners.
+		 */
+
+		final ItemListener il = ( l ) -> {
+			final boolean enabled = chckbxSaveEachTimepoint.isSelected();
+			textField.setEnabled( enabled );
+			for ( final Component c : panelBrowse.getComponents() )
+				c.setEnabled( enabled );
+		};
+		chckbxSaveEachTimepoint.addItemListener( il );
+
+		/*
+		 * Default values.
+		 */
+
+		textField.setText( System.getProperty( "user.home" ) );
+		chckbxSaveEachTimepoint.setSelected( false );
+		il.itemStateChanged( null );
+	}
+
+	private void browse()
+	{
+		final int returnVal = chooser.showOpenDialog( this );
+		if ( returnVal == JFileChooser.APPROVE_OPTION )
+			textField.setText( chooser.getSelectedFile().getAbsolutePath() );
 	}
 
 	public boolean showReferenceSurfaceMovie()
@@ -152,5 +274,25 @@ public class RunPanel extends JPanel
 	public void setShowReferenceSurfacePreview( final boolean showReferencePlane )
 	{
 		chckbxShowReferencePlanePreview.setSelected( showReferencePlane );
+	}
+
+	public boolean saveEachTimepoint()
+	{
+		return chckbxSaveEachTimepoint.isSelected();
+	}
+
+	public void setSaveEachTimepoint( final boolean saveEachTimepoint )
+	{
+		chckbxSaveEachTimepoint.setSelected( saveEachTimepoint );
+	}
+
+	public String getSavePath()
+	{
+		return textField.getText();
+	}
+
+	public void setSavePath( final String path )
+	{
+		textField.setText( path );
 	}
 }

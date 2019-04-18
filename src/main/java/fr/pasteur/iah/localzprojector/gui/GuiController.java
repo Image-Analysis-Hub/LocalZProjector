@@ -1,5 +1,6 @@
 package fr.pasteur.iah.localzprojector.gui;
 
+import java.io.File;
 import java.util.List;
 import java.util.function.Supplier;
 
@@ -60,7 +61,7 @@ public class GuiController
 				datasetSupplier,
 				() -> previewReferencePlane(),
 				( b ) -> previewLocalProjection( b ),
-				( b ) -> runLocalProjection( b ),
+				() -> runLocalProjection(),
 				() -> stop() );
 
 		final JFrame frame = new JFrame();
@@ -77,11 +78,17 @@ public class GuiController
 			cancelable.cancel( "User pressed the stop button." );
 	}
 
-	private < T extends RealType< T > & NativeType< T > > void run( final Dataset input, final boolean showReferencePlane )
+	private < T extends RealType< T > & NativeType< T > > void run( final Dataset input, final boolean showReferencePlane, final boolean saveEachTimePoint, final String savePath )
 	{
 		if ( null == input )
 		{
 			logService.warn( "Please select an image before running Local Z Projector." );
+			return;
+		}
+
+		if ( saveEachTimePoint && !new File( savePath ).canWrite() )
+		{
+			logService.error( "Cannot write into target folder: " + savePath + "." );
 			return;
 		}
 
@@ -112,7 +119,9 @@ public class GuiController
 						referenceSurfaceParameters,
 						extractSurfaceParameters,
 						showReferencePlane,
-						showOutputDuringCalculation);
+						showOutputDuringCalculation,
+						saveEachTimePoint,
+						savePath );
 				cancelable = localZProjectionOp;
 				localZProjectionOp.calculate( input );
 			}
@@ -124,10 +133,13 @@ public class GuiController
 		}, "Local Z Projector Run Local Projection Thread" ).start();
 	}
 
-	private < T extends RealType< T > & NativeType< T > > void runLocalProjection( final boolean showReferencePlane )
+	private < T extends RealType< T > & NativeType< T > > void runLocalProjection()
 	{
+		final boolean showReferenceSurfaceMovie = guiPanel.runPanel.showReferenceSurfaceMovie();
+		final boolean saveEachTimepoint = guiPanel.runPanel.saveEachTimepoint();
+		final String savePath = guiPanel.runPanel.getSavePath(); 
 		final Dataset input = guiPanel.getSelectedDataset();
-		run( input, showReferencePlane );
+		run( input, showReferenceSurfaceMovie, saveEachTimepoint, savePath );
 	}
 
 	private < T extends RealType< T > & NativeType< T > > void previewLocalProjection( final boolean showReferencePlane )
@@ -160,7 +172,7 @@ public class GuiController
 		final ImgPlus< T > source = ( ImgPlus< T > ) dataset.getImgPlus();
 		final ImgPlus< T > tp = LocalZProjectionOp.getSourceTimePoint( source, currentT, ops );
 		final DefaultDataset timepoint = new DefaultDataset( context, tp );
-		run( timepoint, showReferencePlane );
+		run( timepoint, showReferencePlane, false, "" );
 	}
 
 	private < T extends RealType< T > & NativeType< T > > void previewReferencePlane()
