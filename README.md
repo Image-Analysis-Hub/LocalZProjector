@@ -2,6 +2,8 @@
 
 An Ops plugin to perform Local-Z projection of a large stack, possibly over time. 
 
-Download last build:
+## Getting the plugin.
 
-[Download](https://gitlab.pasteur.fr/iah/localzprojector/-/jobs/artifacts/master/download?job=validate:jdk8)
+The plugin is available via Fiji and can be downloaded using the Fiji updater.
+To do so, you simply need to subscribe to the `LocalZProjector` update site on the common server:
+![Update site](docs/UpdateSite.png)
