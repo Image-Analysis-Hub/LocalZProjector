@@ -218,13 +218,18 @@ public class LocalZProjectionOp< T extends RealType< T > & NativeType< T > > ext
 
 			if ( saveAtEachTimePoint )
 			{
-				// TODO
-				final String inputName = input.getName().substring( 0, input.getName().lastIndexOf( '.' ) );
+				final String str = input.getName() == null
+						? "LocalZProjectorOutput"
+						: input.getName();
+				final int dotIndex = str.lastIndexOf( '.' );
+				final String inputName = dotIndex > 0
+						? str.substring( 0, dotIndex )
+						: str;
 				final int ndigits = Long.toString( nFrames ).length();
 				// Save reference surface if asked.
 				if ( showReferenceSurface )
 				{
-					final String refTpName = String.format( "%s_RefSurface_%" + ndigits + "d", inputName, t );
+					final String refTpName = String.format( "%s_RefSurface_%0" + ndigits + "d", inputName, t );
 					
 					final CalibratedAxis[] axesRefSurface = new CalibratedAxis[ 2 ];
 					axesRefSurface[ 0 ] = input.getImgPlus().axis( input.getImgPlus().dimensionIndex( Axes.X ) );
@@ -244,7 +249,7 @@ public class LocalZProjectionOp< T extends RealType< T > & NativeType< T > > ext
 					}
 				}
 
-				final String outputTpName = String.format( "%s_LocalProjection_%" + ndigits + "d", inputName, t );
+				final String outputTpName = String.format( "%s_LocalProjection_%0" + ndigits + "d", inputName, t );
 				final CalibratedAxis[] outputTpAxes = new CalibratedAxis[ outputSlice.numDimensions() ];
 				// Remove T
 				int id2 = 0;
