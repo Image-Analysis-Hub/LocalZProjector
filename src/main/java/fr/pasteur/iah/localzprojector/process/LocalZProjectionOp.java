@@ -11,6 +11,7 @@ import org.scijava.display.DisplayService;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 
+import fr.pasteur.iah.localzprojector.util.AppUtil;
 import io.scif.services.DatasetIOService;
 import net.imagej.Dataset;
 import net.imagej.DefaultDataset;
@@ -394,5 +395,15 @@ public class LocalZProjectionOp< T extends RealType< T > & NativeType< T > > ext
 	public String getCancelReason()
 	{
 		return cancelReason;
+	}
+
+	/**
+	 * Returns the current version of LocalZProjector as a string.
+	 * 
+	 * @return the current version of LocalZProjector.
+	 */
+	public String getVersion()
+	{
+		return AppUtil.getVersion();
 	}
 }
