@@ -92,11 +92,16 @@ public class ReferenceSurfaceOp< T extends RealType< T > & NativeType< T > > ext
 			if ( params.binning > 1 )
 				binned = binner.calculate( slice );
 			else
-				binned = slice;
-
+			{
+				if ( params.sigma > 0. )
+					// Duplicate so that we don't smooth the source.
+					binned = ops().copy().rai( slice );
+				else
+					binned = slice;
+			}
 
 			// Gaussian filtering.
-			if ( params.sigma > 0 )
+			if ( params.sigma > 0. )
 				ops.filter().gauss( binned, binned, params.sigma );
 
 			// Surface filtering method.
