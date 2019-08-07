@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>org.scijava</groupId>
 		<artifactId>pom-scijava</artifactId>
-		<version>25.0.0</version>
+		<version>27.0.1</version>
 		<relativePath />
 	</parent>
 
@@ -35,8 +35,9 @@
 		<license.copyrightOwners>IAH developers.</license.copyrightOwners>
 		<license.projectName>Image Analysis Hub support for Life Scientists.</license.projectName>
 		<!-- Export build properties to make them accessible at runtime. -->
-		<name>${project.name></name>
+		<name>${project.name}</name>
 		<version>${project.version}</version>
+		<package-name>fr.pasteur.iah.localzprojector</package-name>
 	</properties>
 	
 	<build>
