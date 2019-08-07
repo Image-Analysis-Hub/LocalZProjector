@@ -185,23 +185,7 @@ public class GuiController
 			return;
 		}
 
-		final DisplayService displayService = ops.context().getService( DisplayService.class );
-		final List< Display< ? > > displays = displayService.getDisplays( dataset );
-		int currentT = 0;
-		for ( final Display< ? > display : displays )
-		{
-			if ( display instanceof ImageDisplay )
-			{
-				currentT = ( ( ImageDisplay ) display ).getIntPosition( Axes.TIME );
-				break;
-			}
-			if ( display instanceof ImagePlusDisplay )
-			{
-				currentT = ( ( ImagePlusDisplay ) display ).get( 0 ).getT();
-				break;
-			}
-		}
-
+		final int currentT = getCurrentTimePoint( dataset );
 		@SuppressWarnings( "unchecked" )
 		final ImgPlus< T > source = ( ImgPlus< T > ) dataset.getImgPlus();
 		final ImgPlus< T > tp = LocalZProjectionOp.getSourceTimePoint( source, currentT, ops, determineIfIsVirtual( dataset ) );
@@ -214,6 +198,7 @@ public class GuiController
 		final EverythingDisablerAndReenabler disabler = new EverythingDisablerAndReenabler( guiPanel, new Class[] { JLabel.class } );
 		disabler.disable();
 		guiPanel.runPanel.btnStop.setEnabled( true );
+
 		new Thread( () -> {
 			try
 			{
@@ -226,24 +211,28 @@ public class GuiController
 					return;
 				}
 
+				final int currentT = getCurrentTimePoint( dataset );
+				@SuppressWarnings( "unchecked" )
+				final ImgPlus< T > source = ( ImgPlus< T > ) dataset.getImgPlus();
+				final ImgPlus< T > tp = LocalZProjectionOp.getSourceTimePoint( source, currentT, ops, determineIfIsVirtual( dataset ) );
+
 				final ReferenceSurfaceParameters params = guiPanel.getReferenceSurfaceParameters();
 
-				final int channelAxis = dataset.dimensionIndex( Axes.CHANNEL );
-				@SuppressWarnings( "unchecked" )
-				final Img< T > img = ( Img< T > ) dataset.getImgPlus().getImg();
-				final RandomAccessibleInterval< T > source;
+				final int channelAxis = tp.dimensionIndex( Axes.CHANNEL );
+
+				final RandomAccessibleInterval< T > tpc;
 				if ( channelAxis >= 0 )
-					source = Views.hyperSlice( img, channelAxis, params.targetChannel );
+					tpc = Views.hyperSlice( tp, channelAxis, params.targetChannel );
 				else
-					source = img;
+					tpc = tp;
 
 				@SuppressWarnings( { "rawtypes", "unchecked" } )
-				final ReferenceSurfaceOp< T > op = ( ReferenceSurfaceOp ) Functions.unary( ops, ReferenceSurfaceOp.class, Img.class, source, params );
+				final ReferenceSurfaceOp< T > op = ( ReferenceSurfaceOp ) Functions.unary( ops, ReferenceSurfaceOp.class, Img.class, tpc, params );
 				cancelable = op;
-				final Img< UnsignedShortType > referenceSurface = op.calculate( source );
+				final Img< UnsignedShortType > referenceSurface = op.calculate( tpc );
 
 				final UIService uiService = context.getService( UIService.class );
-				uiService.show( referenceSurface );
+				uiService.show( "Reference surface preview tp " + currentT + "  of " + dataset.getName(), referenceSurface );
 			}
 			finally
 			{
@@ -252,6 +241,33 @@ public class GuiController
 			}
 		},
 				"Local Z Projector Preview Reference Plane Thread" ).start();
+	}
+
+	private int getCurrentTimePoint( final Dataset dataset )
+	{
+		final DisplayService displayService = ops.context().getService( DisplayService.class );
+		final List< Display< ? > > displays = displayService.getDisplays( dataset );
+		for ( final Display< ? > display : displays )
+		{
+			if ( display instanceof ImageDisplay )
+			{
+				final ImageDisplay imaegDisplay = ( ImageDisplay ) display;
+
+				// Top priority: can we find an ImagePlus for this dataset?
+				final LegacyService legacyService = ops.context().getService( LegacyService.class );
+				if ( null != legacyService )
+				{
+					final ImagePlus imp = legacyService.getImageMap().lookupImagePlus( imaegDisplay );
+					return imp.getT();
+				}
+
+				return ( ( ImageDisplay ) display ).getActiveView().getIntPosition( Axes.TIME );
+			}
+			
+			if ( display instanceof ImagePlusDisplay )
+				return ( ( ImagePlusDisplay ) display ).get( 0 ).getT();
+		}
+		return 0;
 	}
 
 	public void setReferenceSurfaceParameters( final ReferenceSurfaceParameters referenceSurfaceParameters )
