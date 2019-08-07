@@ -16,8 +16,11 @@ import io.scif.services.DatasetIOService;
 import net.imagej.Dataset;
 import net.imagej.DefaultDataset;
 import net.imagej.ImgPlus;
+import net.imagej.autoscale.AutoscaleService;
 import net.imagej.axis.Axes;
 import net.imagej.axis.CalibratedAxis;
+import net.imagej.display.DatasetView;
+import net.imagej.display.ImageDisplay;
 import net.imagej.ops.OpEnvironment;
 import net.imagej.ops.special.computer.Computers;
 import net.imagej.ops.special.function.AbstractUnaryFunctionOp;
@@ -82,6 +85,9 @@ public class LocalZProjectionOp< T extends RealType< T > & NativeType< T > > ext
 
 	@Parameter
 	private DatasetIOService ioService;
+
+	@Parameter
+	private AutoscaleService autoscaleService;
 
 	private String cancelReason;
 
@@ -162,11 +168,44 @@ public class LocalZProjectionOp< T extends RealType< T > & NativeType< T > > ext
 		 * Show output?
 		 */
 
+		final ImageDisplay referenceSurfaceDisplay;
+		final ImageDisplay projectionDisplay;
 		if ( showOutputDuringCalculation )
 		{
-			displayService.createDisplay( output );
+			projectionDisplay = ( ImageDisplay ) displayService.createDisplay( output );
+
+			// Try to see if we can force display as composite.
+			output.setCompositeChannelCount( ( int ) output.dimension( Axes.CHANNEL ) );
+
+			// Autoscale based on source display.
+			final DatasetView dataViewProjection = ( DatasetView ) projectionDisplay.get( 0 );
+			for ( int c = 0; c < output.dimension( Axes.CHANNEL ); c++ )
+			{
+				final double min = input.getChannelMinimum( c );
+				final double max = input.getChannelMaximum( c );
+				final double range = max - min;
+				final double alpha = 0.; // display saturation.
+				output.setChannelMinimum( c, min + alpha * range );
+				output.setChannelMaximum( c, max - alpha * range );
+				dataViewProjection.setChannelRange( c, output.getChannelMinimum( c ), output.getChannelMaximum( c ) );
+			}
+			projectionDisplay.update();
+
 			if ( showReferenceSurface )
-				displayService.createDisplay( referenceSurfaces );
+			{
+				referenceSurfaceDisplay = ( ImageDisplay ) displayService.createDisplay( referenceSurfaces );
+				final DatasetView dataViewReference = ( DatasetView ) referenceSurfaceDisplay.get( 0 );
+				dataViewReference.setChannelRanges( 0, input.dimension( Axes.Z ) );
+			}
+			else
+			{
+				referenceSurfaceDisplay = null;
+			}
+		}
+		else
+		{
+			projectionDisplay = null;
+			referenceSurfaceDisplay = null;
 		}
 
 		/*
@@ -214,7 +253,11 @@ public class LocalZProjectionOp< T extends RealType< T > & NativeType< T > > ext
 			if ( showOutputDuringCalculation && showReferenceSurface )
 			{
 				copyOnReferenceSurfaceOutput( referenceSurface, ( ImgPlus< UnsignedShortType > ) referenceSurfaces.getImgPlus(), t );
-				referenceSurfaces.update();
+
+				final int timeAxisIndex = referenceSurfaceDisplay.dimensionIndex( Axes.TIME );
+				if ( timeAxisIndex >= 0 )
+					referenceSurfaceDisplay.setPosition( t, timeAxisIndex );
+				referenceSurfaceDisplay.update();
 			}
 
 			/*
@@ -229,7 +272,13 @@ public class LocalZProjectionOp< T extends RealType< T > & NativeType< T > > ext
 			extractSurfaceOp.compute( tp, referenceSurface, outputSlice );
 
 			if ( showOutputDuringCalculation )
+			{
 				output.update();
+				final int timeAxisIndex = projectionDisplay.dimensionIndex( Axes.TIME );
+				if ( timeAxisIndex >= 0 )
+					projectionDisplay.setPosition( t, timeAxisIndex );
+				projectionDisplay.update();
+			}
 
 			/*
 			 * Save at each time-point.
