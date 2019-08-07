@@ -32,11 +32,11 @@ public class TestDriveGUI
 
 		final int channel = 1;
 		final ReferenceSurfaceParameters referenceSurfaceParameters = ReferenceSurfaceParameters.create()
-				.method( Method.MAX_OF_STD )
-				.binning( 4 )
+				.method( Method.SPARSE_MAX_OF_STD )
+				.binning( 2 )
 				.zMin( 0 )
-				.zMax( 26 )
-				.filterWindowSize( 30 )
+				.zMax( 30 )
+				.filterWindowSize( 41 )
 				.gaussianPreFilter( 0.25 )
 				.medianPostFilterHalfSize( 20 )
 				.targetChannel( channel )
