@@ -12,6 +12,7 @@ import org.scijava.Context;
 import org.scijava.display.Display;
 import org.scijava.display.DisplayService;
 import org.scijava.log.LogService;
+import org.scijava.prefs.PrefService;
 import org.scijava.ui.UIService;
 
 import fr.pasteur.iah.localzprojector.process.ExtractSurfaceParameters;
@@ -64,7 +65,8 @@ public class GuiController
 				() -> previewReferencePlane(),
 				( b ) -> previewLocalProjection( b ),
 				() -> runLocalProjection(),
-				() -> stop() );
+				() -> stop(),
+				context.getService( PrefService.class ) );
 
 		final JFrame frame = new JFrame();
 		frame.setLocationByPlatform( true );

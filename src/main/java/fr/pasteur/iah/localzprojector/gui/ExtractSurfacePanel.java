@@ -26,6 +26,9 @@ import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.filechooser.FileFilter;
 
+import org.scijava.prefs.DefaultPrefService;
+import org.scijava.prefs.PrefService;
+
 import fr.pasteur.iah.localzprojector.process.ExtractSurfaceParameters;
 import fr.pasteur.iah.localzprojector.process.ExtractSurfaceParameters.Builder;
 import fr.pasteur.iah.localzprojector.util.GuiUtil;
@@ -60,8 +63,11 @@ public class ExtractSurfacePanel extends JPanel
 
 	};
 
-	public ExtractSurfacePanel( final int nChannels, final int nZSlices )
+	private final PrefService prefs;
+
+	public ExtractSurfacePanel( final int nChannels, final int nZSlices, final PrefService prefs )
 	{
+		this.prefs = prefs;
 		final GridBagLayout gridBagLayout = new GridBagLayout();
 		setLayout( gridBagLayout );
 
@@ -84,7 +90,7 @@ public class ExtractSurfacePanel extends JPanel
 		for ( int channel = 0; channel < nChannels; channel++ )
 		{
 			panelChannels.add( Box.createHorizontalStrut( 5 ) );
-			final ExtractSurfaceChannelPanel ci = new ExtractSurfaceChannelPanel( channel, nZSlices );
+			final ExtractSurfaceChannelPanel ci = new ExtractSurfaceChannelPanel( channel, nZSlices, prefs );
 			channels.add( ci );
 			panelChannels.add( ci );
 			panelChannels.add( Box.createHorizontalStrut( 1 ) );
@@ -200,7 +206,7 @@ public class ExtractSurfacePanel extends JPanel
 		Locale.setDefault( Locale.ROOT );
 		UIManager.setLookAndFeel( UIManager.getSystemLookAndFeelClassName() );
 		final JFrame frame = new JFrame();
-		frame.getContentPane().add( new ExtractSurfacePanel( 3, 41 ) );
+		frame.getContentPane().add( new ExtractSurfacePanel( 3, 41, new DefaultPrefService() ) );
 		frame.pack();
 		frame.setVisible( true );
 	}

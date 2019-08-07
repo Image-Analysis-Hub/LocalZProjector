@@ -4,6 +4,7 @@ import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.event.ItemEvent;
 import java.io.File;
 import java.io.IOException;
 import java.text.DecimalFormat;
@@ -27,6 +28,9 @@ import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.filechooser.FileFilter;
 
+import org.scijava.prefs.DefaultPrefService;
+import org.scijava.prefs.PrefService;
+
 import fr.pasteur.iah.localzprojector.process.ReferenceSurfaceParameters;
 import fr.pasteur.iah.localzprojector.process.ReferenceSurfaceParameters.Method;
 import fr.pasteur.iah.localzprojector.util.GuiUtil;
@@ -39,6 +43,14 @@ public class ReferenceSurfacePanel extends JPanel
 	private final static ImageIcon LOAD_ICON = new ImageIcon( ReferenceSurfacePanel.class.getResource( "page_go.png" ) );
 
 	private final static ImageIcon SAVE_ICON = new ImageIcon( ReferenceSurfacePanel.class.getResource( "page_save.png" ) );
+
+	// For parameter persistence.
+	private final static String TARGET_CHANNEL_PREF_NAME = "targetChannel";
+	private final static String METHOD_PREF_NAME = "method";
+	private final static String FILTER_WINDOW_SIZE_PREF_NAME = "filterWindowSize";
+	private final static String SIGMA_PREF_NAME = "sigma";
+	private final static String MEDIAN_SIZE_PREF_NAME = "medianSize";
+	private final static String BINNING_PREF_NAME = "binning";
 
 	private final static String suffix = ".referencesurface.localzprojector";
 
@@ -75,7 +87,7 @@ public class ReferenceSurfacePanel extends JPanel
 
 	private SpinnerNumberModel spinnerModelBinning;
 
-	public ReferenceSurfacePanel( final int nChannels, final int nZSlices )
+	public ReferenceSurfacePanel( final int nChannels, final int nZSlices, final PrefService prefs )
 	{
 		final GridBagLayout gridBagLayout = new GridBagLayout();
 		gridBagLayout.columnWeights = new double[] { 1., 1. };
@@ -88,6 +100,17 @@ public class ReferenceSurfacePanel extends JPanel
 		c.gridx = 0;
 		c.gridy = 0;
 
+		/*
+		 * Default and persistence.
+		 */
+
+		final int targetChannel = Math.max( 0, Math.min( nChannels - 1, prefs.getInt( ReferenceSurfaceParameters.class, TARGET_CHANNEL_PREF_NAME, 0 ) ) );
+		final Method method = ReferenceSurfaceParameters.Method.values()[ prefs.getInt( ReferenceSurfaceParameters.class, METHOD_PREF_NAME, 0 ) ];
+		final int filterWindowSize = prefs.getInt( ReferenceSurfaceParameters.class, FILTER_WINDOW_SIZE_PREF_NAME, 21 );
+		final double sigma = prefs.getDouble( ReferenceSurfaceParameters.class, SIGMA_PREF_NAME, 0. );
+		final int medianSize = prefs.getInt( ReferenceSurfaceParameters.class, MEDIAN_SIZE_PREF_NAME, 41 );
+		final int binning = prefs.getInt( ReferenceSurfaceParameters.class, BINNING_PREF_NAME, 1 );
+
 		final JLabel lblReferenceSurface = new JLabel( "Reference surface." );
 		lblReferenceSurface.setHorizontalAlignment( JLabel.CENTER );
 		lblReferenceSurface.setFont( lblReferenceSurface.getFont().deriveFont( lblReferenceSurface.getFont().getSize() + 2f ) );
@@ -99,7 +122,7 @@ public class ReferenceSurfacePanel extends JPanel
 		add( new JLabel( "Target channel:" ), c );
 
 		c.gridx = 1;
-		this.spinnerModelChannel = new SpinnerNumberModel( 0, 0, nChannels - 1, 1 );
+		this.spinnerModelChannel = new SpinnerNumberModel( targetChannel, 0, nChannels - 1, 1 );
 		add( new JSpinner( spinnerModelChannel ), c );
 
 		c.gridx = 0;
@@ -107,7 +130,7 @@ public class ReferenceSurfacePanel extends JPanel
 		add( new JLabel( "Binning:" ), c );
 
 		c.gridx = 1;
-		this.spinnerModelBinning = new SpinnerNumberModel( 1, 1, 100, 1 );
+		this.spinnerModelBinning = new SpinnerNumberModel( binning, 1, 100, 1 );
 		add( new JSpinner( spinnerModelBinning ), c );
 
 		final JPanel methodPanel = new JPanel();
@@ -116,6 +139,7 @@ public class ReferenceSurfacePanel extends JPanel
 		methodPanel.add( new JLabel( "Method:" ) );
 		methodPanel.add( Box.createHorizontalGlue() );
 		comboBoxMethod = new JComboBox<>( Method.values() );
+		comboBoxMethod.setSelectedItem( method );
 		methodPanel.add( comboBoxMethod );
 		c.gridx = 0;
 		c.gridwidth = 2;
@@ -128,7 +152,7 @@ public class ReferenceSurfacePanel extends JPanel
 		add( new JLabel( "Neighborhood size (pixels):" ), c );
 
 		c.gridx = 1;
-		this.spinnerModelSize = new SpinnerNumberModel( 21, 1, 1001, 2 );
+		this.spinnerModelSize = new SpinnerNumberModel( filterWindowSize, 1, 1001, 2 );
 		add( new JSpinner( spinnerModelSize ), c );
 
 		c.gridx = 0;
@@ -157,7 +181,7 @@ public class ReferenceSurfacePanel extends JPanel
 		format.setMaximumFractionDigits( 2 );
 		this.ftfSigma = new JFormattedTextField( format );
 		ftfSigma.setHorizontalAlignment( JTextField.TRAILING );
-		ftfSigma.setValue( Double.valueOf( 1. ) );
+		ftfSigma.setValue( Double.valueOf( sigma ) );
 		add( ftfSigma, c );
 
 		c.gridx = 0;
@@ -165,7 +189,7 @@ public class ReferenceSurfacePanel extends JPanel
 		add( new JLabel( "Median post-filter size (pixels):" ), c );
 
 		c.gridx = 1;
-		this.spinnerModelMedian = new SpinnerNumberModel( 41, 1, 1001, 2 );
+		this.spinnerModelMedian = new SpinnerNumberModel( medianSize, 1, 1001, 2 );
 		add( new JSpinner( spinnerModelMedian ), c );
 
 		c.gridx = 0;
@@ -198,6 +222,22 @@ public class ReferenceSurfacePanel extends JPanel
 
 		btnLoadParams.addActionListener( l -> loadParameters() );
 		btnSaveParams.addActionListener( l -> saveParameters() );
+
+		spinnerModelChannel.addChangeListener( e -> prefs.put( ReferenceSurfaceParameters.class,
+				TARGET_CHANNEL_PREF_NAME, ( ( Number ) spinnerModelChannel.getValue() ).intValue() ) );
+		spinnerModelBinning.addChangeListener( e -> prefs.put( ReferenceSurfaceParameters.class,
+				BINNING_PREF_NAME, ( ( Number ) spinnerModelBinning.getValue() ).intValue() ) );
+		comboBoxMethod.addItemListener( e -> {
+			if ( e.getStateChange() == ItemEvent.SELECTED )
+				prefs.put( ReferenceSurfaceParameters.class,
+						METHOD_PREF_NAME, comboBoxMethod.getSelectedIndex() );
+		} );
+		spinnerModelSize.addChangeListener( e -> prefs.put( ReferenceSurfaceParameters.class,
+				FILTER_WINDOW_SIZE_PREF_NAME, ( ( Number ) spinnerModelSize.getValue() ).intValue() ) );
+		ftfSigma.addPropertyChangeListener( "value", e -> prefs.put( ReferenceSurfaceParameters.class,
+				SIGMA_PREF_NAME, ( ( Number ) ftfSigma.getValue() ).doubleValue() ) );
+		spinnerModelMedian.addChangeListener( e -> prefs.put( ReferenceSurfaceParameters.class,
+				MEDIAN_SIZE_PREF_NAME, ( ( ( Number ) spinnerModelMedian.getValue() ).intValue() - 1 ) / 2 ) );
 	}
 
 	public ReferenceSurfaceParameters getParameters()
@@ -280,7 +320,7 @@ public class ReferenceSurfacePanel extends JPanel
 		Locale.setDefault( Locale.ROOT );
 		UIManager.setLookAndFeel( UIManager.getSystemLookAndFeelClassName() );
 		final JFrame frame = new JFrame();
-		frame.getContentPane().add( new ReferenceSurfacePanel( 3, 41 ) );
+		frame.getContentPane().add( new ReferenceSurfacePanel( 3, 41, new DefaultPrefService() ) );
 		frame.pack();
 		frame.setVisible( true );
 	}

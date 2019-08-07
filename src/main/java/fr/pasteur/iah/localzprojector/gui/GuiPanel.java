@@ -10,6 +10,8 @@ import javax.swing.JPanel;
 import javax.swing.JSeparator;
 import javax.swing.SwingConstants;
 
+import org.scijava.prefs.PrefService;
+
 import fr.pasteur.iah.localzprojector.process.ExtractSurfaceParameters;
 import fr.pasteur.iah.localzprojector.process.ReferenceSurfaceParameters;
 import fr.pasteur.iah.localzprojector.util.AppUtil;
@@ -19,6 +21,8 @@ public class GuiPanel extends JPanel
 {
 
 	private static final long serialVersionUID = 1L;
+
+	private final PrefService prefService;
 
 	static JFileChooser fileChooser = new JFileChooser();
 
@@ -33,6 +37,7 @@ public class GuiPanel extends JPanel
 	private Dataset dataset;
 
 	private JPanel middlePanel;
+
 
 	/**
 	 * Creates the GUI panel.
@@ -50,14 +55,18 @@ public class GuiPanel extends JPanel
 	 *            function to run when the 'Local projection' button is pressed.
 	 * @param stopper
 	 *            function to run with the 'Stop' button is pressed.
+	 * @param prefService
+	 *            used to grant persistence of settings on the GUI.
 	 */
 	public GuiPanel(
 			final Supplier< Dataset > datasetSupplier,
 			final Runnable previewReferencePlaneRunner,
 			final Consumer< Boolean > previewLocalProjectionRunner,
 			final Runnable localProjectionRunner,
-			final Runnable stopper )
+			final Runnable stopper,
+			final PrefService prefService )
 	{
+		this.prefService = prefService;
 		final BoxLayout boxLayout = new BoxLayout( this, BoxLayout.PAGE_AXIS );
 		setLayout( boxLayout );
 
@@ -140,7 +149,7 @@ public class GuiPanel extends JPanel
 		 * Reference plane panel.
 		 */
 
-		referenceSurfacePanel = new ReferenceSurfacePanel( nChannels, nZSlices );
+		referenceSurfacePanel = new ReferenceSurfacePanel( nChannels, nZSlices, prefService );
 		middlePanel.add( referenceSurfacePanel );
 
 		/*
@@ -153,7 +162,7 @@ public class GuiPanel extends JPanel
 		 * Local projection panel.
 		 */
 
-		extractSurfacePanel = new ExtractSurfacePanel( nChannels, nZSlices );
+		extractSurfacePanel = new ExtractSurfacePanel( nChannels, nZSlices, prefService );
 		middlePanel.add( extractSurfacePanel );
 
 	}
