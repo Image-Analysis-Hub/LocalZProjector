@@ -56,6 +56,24 @@ public class LocalZProjectionOp< T extends RealType< T > & NativeType< T > > ext
 	@Parameter( type = ItemIO.INPUT, required = false )
 	private String saveFolder = System.getProperty( "user.home" );
 
+	/**
+	 * Specifies whether the source image is opened as a virtual stack.
+	 * <p>
+	 * For large movies it is a good idea to copy a full 3D+C stack on a new
+	 * Img. Why? Because when movies are very big they will be opened as a
+	 * virtual stack in ImageJ. Virtual stacks are cool, but a disk access
+	 * happens every-time we change the Z position. And when we do the extract
+	 * of the surface, we iterate along Z for each XY position. This copy here
+	 * works like a simple cache for 3D.
+	 * <p>
+	 * But it takes time, which might slow down process when we have only one
+	 * time-point, but a large 3D image that fits into memory. So we let the
+	 * user specifies whether the source movie is virtual (do a copy) or not (no
+	 * copy needed, the default).
+	 */
+	@Parameter( type = ItemIO.INPUT, required = false )
+	private boolean isVirtual = false;
+
 	@Parameter
 	private DisplayService displayService;
 
@@ -176,7 +194,7 @@ public class LocalZProjectionOp< T extends RealType< T > & NativeType< T > > ext
 		{
 
 			status.showStatus( "Processing time-point " + t );
-			final ImgPlus< T > tp = getSourceTimePoint( ( ImgPlus< T > ) input.getImgPlus(), t, ops() );
+			final ImgPlus< T > tp = getSourceTimePoint( ( ImgPlus< T > ) input.getImgPlus(), t, ops(), isVirtual );
 
 			/*
 			 * Get reference surface.
@@ -316,30 +334,36 @@ public class LocalZProjectionOp< T extends RealType< T > & NativeType< T > > ext
 		return Views.hyperSlice( output, timeAxis, t );
 	}
 
-	public static final < T extends RealType< T > & NativeType< T > > ImgPlus< T > getSourceTimePoint( final ImgPlus< T > img, final long t, final OpEnvironment ops )
+	public static final < T extends RealType< T > & NativeType< T > > ImgPlus< T > getSourceTimePoint( final ImgPlus< T > img, final long t, final OpEnvironment ops, final boolean isVirtual )
 	{
 		final int timeAxis = img.dimensionIndex( Axes.TIME );
 		if ( timeAxis < 0 )
 			return img;
 
 		final IntervalView< T > tp = Views.hyperSlice( img, timeAxis, t );
-
-		/*
-		 * The line below is a method that does not do any duplication. However
-		 * for Leo project it is a good idea to copy a full 3D+C stack on a new
-		 * Img.
-		 *
-		 * Why? Because Leo images are very big and will be opened as a virtual
-		 * stack in ImageJ. Virtal stacks are cool, but a disk access happens
-		 * every-time we change the Z position. And when we do the extract of
-		 * the surface, we iterate along Z for each XY position. This copy here
-		 * works like a simple cache for 3D.
-		 */
-		// final Img< T > wrap = ImgView.wrap( tp,
-		// Util.getArrayOrCellImgFactory( tp, img.firstElement() ) );
-
-		final Img< T > copy = ops.create().img( tp, img.firstElement() );
-		ops.copy().rai( copy, tp );
+		final Img< T > copy;
+		if ( isVirtual )
+		{
+			/*
+			 * For large images it is a good idea to copy a full 3D+C stack on a
+			 * new Img.
+			 *
+			 * Why? Because when images are very big they will be opened as a
+			 * virtual stack in ImageJ. Virtual stacks are cool, but a disk
+			 * access happens every-time we change the Z position. And when we
+			 * do the extract of the surface, we iterate along Z for each XY
+			 * position. This copy here works like a simple cache for 3D.
+			 */
+			copy = ops.create().img( tp, img.firstElement() );
+			ops.copy().rai( copy, tp );
+		}
+		else
+		{
+			/*
+			 * The line below is a method that does not do any duplication.
+			 */
+			copy = ImgView.wrap( tp, Util.getArrayOrCellImgFactory( tp, img.firstElement() ) );
+		}
 
 		// Put back axes.
 		final CalibratedAxis[] axes = new CalibratedAxis[ img.numDimensions() - 1 ];

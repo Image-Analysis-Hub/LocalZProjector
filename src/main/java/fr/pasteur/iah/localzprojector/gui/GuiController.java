@@ -19,12 +19,14 @@ import fr.pasteur.iah.localzprojector.process.LocalZProjectionOp;
 import fr.pasteur.iah.localzprojector.process.ReferenceSurfaceOp;
 import fr.pasteur.iah.localzprojector.process.ReferenceSurfaceParameters;
 import fr.pasteur.iah.localzprojector.util.EverythingDisablerAndReenabler;
+import ij.ImagePlus;
 import net.imagej.Dataset;
 import net.imagej.DefaultDataset;
 import net.imagej.ImgPlus;
 import net.imagej.axis.Axes;
 import net.imagej.display.ImageDisplay;
 import net.imagej.display.ImageDisplayService;
+import net.imagej.legacy.LegacyService;
 import net.imagej.legacy.display.ImagePlusDisplay;
 import net.imagej.ops.OpService;
 import net.imagej.ops.special.function.Functions;
@@ -99,6 +101,7 @@ public class GuiController
 		final ExtractSurfaceParameters extractSurfaceParameters = guiPanel.getExtractSurfaceParameters();
 		final ReferenceSurfaceParameters referenceSurfaceParameters = guiPanel.getReferenceSurfaceParameters();
 		final boolean showOutputDuringCalculation = true;
+		final boolean isVirtual = determineIfIsVirtual( input );
 
 		/*
 		 * Run
@@ -121,7 +124,8 @@ public class GuiController
 						showReferencePlane,
 						showOutputDuringCalculation,
 						saveEachTimePoint,
-						savePath );
+						savePath,
+						isVirtual );
 				cancelable = localZProjectionOp;
 				localZProjectionOp.calculate( input );
 			}
@@ -131,6 +135,36 @@ public class GuiController
 				disabler.reenable();
 			}
 		}, "Local Z Projector Run Local Projection Thread" ).start();
+	}
+
+	/**
+	 * Determines whether the specified dataset is backed up by an ImagePlus
+	 * which is virtual (in the IJ1 sense).
+	 * 
+	 * @param input
+	 *            the dataset to inspect.
+	 * @return whether it is backed up by a virtual stack.
+	 */
+	private boolean determineIfIsVirtual( final Dataset input )
+	{
+		final LegacyService legacyService = ops.getContext().getService( LegacyService.class );
+		if ( null == legacyService )
+			return false;
+
+		final DisplayService displayService = ops.getContext().getService( DisplayService.class );
+		final List< Display< ? > > displays = displayService.getDisplays( input );
+		if ( null == displays || displays.isEmpty() )
+			return false;
+
+		final Display< ? > display = displays.get( 0 );
+		if ( !ImageDisplay.class.isInstance( display ) )
+			return false;
+
+		final ImagePlus imp = legacyService.getImageMap().lookupImagePlus( ( ImageDisplay ) display );
+		if ( null == imp )
+			return false;
+
+		return imp.getImageStack().isVirtual();
 	}
 
 	private < T extends RealType< T > & NativeType< T > > void runLocalProjection()
@@ -170,7 +204,7 @@ public class GuiController
 
 		@SuppressWarnings( "unchecked" )
 		final ImgPlus< T > source = ( ImgPlus< T > ) dataset.getImgPlus();
-		final ImgPlus< T > tp = LocalZProjectionOp.getSourceTimePoint( source, currentT, ops );
+		final ImgPlus< T > tp = LocalZProjectionOp.getSourceTimePoint( source, currentT, ops, determineIfIsVirtual( dataset ) );
 		final DefaultDataset timepoint = new DefaultDataset( context, tp );
 		run( timepoint, showReferencePlane, false, "" );
 	}
