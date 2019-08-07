@@ -46,7 +46,9 @@ public class ReferenceSurfaceParameters implements Serializable
 	{
 
 		MAX_OF_MEAN( "Max of mean" ),
-		MAX_OF_STD( "Max of std" );
+		MAX_OF_STD( "Max of std" ),
+		SPARSE_MAX_OF_MEAN( "Sparse max of mean" ),
+		SPARSE_MAX_OF_STD( "Sparse max of std" );
 
 		private final String str;
 
