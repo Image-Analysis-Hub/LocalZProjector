@@ -93,6 +93,11 @@ public class LocalZProjectionOp< T extends RealType< T > & NativeType< T > > ext
 
 	private Cancelable cancelable;
 
+	/**
+	 * Stores the reference surface.
+	 */
+	private DefaultDataset referenceSurfaces;
+
 	@SuppressWarnings( "unchecked" )
 	@Override
 	public Dataset calculate( final Dataset input )
@@ -126,43 +131,35 @@ public class LocalZProjectionOp< T extends RealType< T > & NativeType< T > > ext
 		final DefaultDataset output = new DefaultDataset( ops().context(), outImgPlus );
 
 		/*
-		 * Show reference surfaces.
+		 * Stores reference surface in a dataset.
 		 */
 
-		final DefaultDataset referenceSurfaces;
-		if ( showReferenceSurface )
+		// We want single channel.
+		final int cAxis = output.dimensionIndex( Axes.CHANNEL );
+		final ImgPlus< UnsignedShortType > imgPlus;
+		if ( cAxis < 0 )
 		{
-			// We want single channel.
-			final int cAxis = output.dimensionIndex( Axes.CHANNEL );
-			final ImgPlus< UnsignedShortType > imgPlus;
-			if ( cAxis < 0 )
-			{
-				final Img< UnsignedShortType > rsImg = ops().create().img( output, new UnsignedShortType() );
-				imgPlus = new ImgPlus<>( rsImg, "Reference planes of " + input.getName(), axes );
-			}
-			else
-			{
-				final CalibratedAxis[] axesRefSurface = new CalibratedAxis[ output.numDimensions() - 1 ];
-				int id2 = 0;
-				final long[] dimsRefSurface = new long[ output.numDimensions() - 1 ];
-				for ( int d = 0; d < output.numDimensions(); d++ )
-				{
-					if ( d == cAxis )
-						continue;
-					dimsRefSurface[ id2 ] = output.dimension( d );
-					axesRefSurface[ id2++ ] = output.axis( d );
-				}
-
-				final Img< UnsignedShortType > rsImg = ops().create().img( FinalDimensions.wrap( dimsRefSurface ), new UnsignedShortType() );
-				imgPlus = new ImgPlus<>( rsImg, "Reference planes of " + input.getName(), axesRefSurface );
-
-			}
-			referenceSurfaces = new DefaultDataset( ops().context(), imgPlus );
+			final Img< UnsignedShortType > rsImg = ops().create().img( output, new UnsignedShortType() );
+			imgPlus = new ImgPlus<>( rsImg, "Reference planes of " + input.getName(), axes );
 		}
 		else
 		{
-			referenceSurfaces = null;
+			final CalibratedAxis[] axesRefSurface = new CalibratedAxis[ output.numDimensions() - 1 ];
+			int id2 = 0;
+			final long[] dimsRefSurface = new long[ output.numDimensions() - 1 ];
+			for ( int d = 0; d < output.numDimensions(); d++ )
+			{
+				if ( d == cAxis )
+					continue;
+				dimsRefSurface[ id2 ] = output.dimension( d );
+				axesRefSurface[ id2++ ] = output.axis( d );
+			}
+
+			final Img< UnsignedShortType > rsImg = ops().create().img( FinalDimensions.wrap( dimsRefSurface ), new UnsignedShortType() );
+			imgPlus = new ImgPlus<>( rsImg, "Reference planes of " + input.getName(), axesRefSurface );
+
 		}
+		referenceSurfaces = new DefaultDataset( ops().context(), imgPlus );
 
 		/*
 		 * Show output?
@@ -245,6 +242,7 @@ public class LocalZProjectionOp< T extends RealType< T > & NativeType< T > > ext
 
 			final RandomAccessibleInterval< T > channel = getChannel( tp, referenceSurfaceParams.targetChannel );
 			final Img< UnsignedShortType > referenceSurface = referenceSurfaceOp.calculate( channel );
+			copyOnReferenceSurfaceOutput( referenceSurface, ( ImgPlus< UnsignedShortType > ) referenceSurfaces.getImgPlus(), t );
 
 			/*
 			 * Show reference surface?
@@ -252,8 +250,6 @@ public class LocalZProjectionOp< T extends RealType< T > & NativeType< T > > ext
 
 			if ( showOutputDuringCalculation && showReferenceSurface )
 			{
-				copyOnReferenceSurfaceOutput( referenceSurface, ( ImgPlus< UnsignedShortType > ) referenceSurfaces.getImgPlus(), t );
-
 				final int timeAxisIndex = referenceSurfaceDisplay.dimensionIndex( Axes.TIME );
 				if ( timeAxisIndex >= 0 )
 					referenceSurfaceDisplay.setPosition( t, timeAxisIndex );
@@ -303,8 +299,8 @@ public class LocalZProjectionOp< T extends RealType< T > & NativeType< T > > ext
 					axesRefSurface[ 0 ] = input.getImgPlus().axis( input.getImgPlus().dimensionIndex( Axes.X ) );
 					axesRefSurface[ 1 ] = input.getImgPlus().axis( input.getImgPlus().dimensionIndex( Axes.Y ) );
 
-					final ImgPlus< UnsignedShortType > imgPlus = new ImgPlus<>( referenceSurface, refTpName, axesRefSurface );
-					final Dataset refSurfaceDataset = new DefaultDataset( ioService.context(), imgPlus );
+					final ImgPlus< UnsignedShortType > imgPlusSingleTP = new ImgPlus<>( referenceSurface, refTpName, axesRefSurface );
+					final Dataset refSurfaceDataset = new DefaultDataset( ioService.context(), imgPlusSingleTP );
 
 					final Path destination = Paths.get( saveFolder, refTpName + ".tif" );
 					try
@@ -328,8 +324,8 @@ public class LocalZProjectionOp< T extends RealType< T > & NativeType< T > > ext
 					outputTpAxes[ id2++ ] = outImgPlus.axis( d );
 				}
 
-				final ImgPlus< T > imgPlus = new ImgPlus< T >( wrapToImgPlus( outputSlice ), outputTpName, outputTpAxes );
-				final Dataset outputTpDataset = new DefaultDataset( ioService.context(), imgPlus );
+				final ImgPlus< T > imgPlusOutputSingleTP = new ImgPlus< T >( wrapToImgPlus( outputSlice ), outputTpName, outputTpAxes );
+				final Dataset outputTpDataset = new DefaultDataset( ioService.context(), imgPlusOutputSingleTP );
 
 				final Path destination = Paths.get( saveFolder, outputTpName + ".tif" );
 				try
@@ -347,6 +343,17 @@ public class LocalZProjectionOp< T extends RealType< T > & NativeType< T > > ext
 		}
 
 		return output;
+	}
+
+	/**
+	 * Return the dataset containing the reference surface calculated during the
+	 * last projection (after {@link #calculate()}).
+	 * 
+	 * @return the reference surface as dataset.
+	 */
+	public DefaultDataset getReferenceSurface()
+	{
+		return referenceSurfaces;
 	}
 
 	private void copyOnReferenceSurfaceOutput( final Img< UnsignedShortType > tp, final ImgPlus< UnsignedShortType > output, final long t )
