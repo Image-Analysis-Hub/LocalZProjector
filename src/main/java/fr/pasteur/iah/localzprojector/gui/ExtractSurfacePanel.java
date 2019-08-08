@@ -63,11 +63,8 @@ public class ExtractSurfacePanel extends JPanel
 
 	};
 
-	private final PrefService prefs;
-
 	public ExtractSurfacePanel( final int nChannels, final int nZSlices, final PrefService prefs )
 	{
-		this.prefs = prefs;
 		final GridBagLayout gridBagLayout = new GridBagLayout();
 		setLayout( gridBagLayout );
 
