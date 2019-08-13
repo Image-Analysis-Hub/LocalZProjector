@@ -27,18 +27,23 @@ public class ExtractSurfaceParameters implements Serializable
 	 */
 	public enum ProjectionMethod
 	{
-	/**
-	 * Take the maximum intensity along Z.
-	 */
-	MIP( "MIP" ),
-	/**
-	 * Take the mean intensity along Z.
-	 */
-	MEAN( "Mean" ),
-	/**
-	 * Take the median intensity along Z.
-	 */
-	MEDIAN("Median");
+		/**
+		 * Take the maximum intensity along Z.
+		 */
+		MIP( "MIP" ),
+		/**
+		 * Take the mean intensity along Z.
+		 */
+		MEAN( "Mean" ),
+		/**
+		 * Take the median intensity along Z.
+		 */
+		MEDIAN( "Median" ),
+		/**
+		 * Do not project but instead collect all the specified slices around
+		 * the reference surface.
+		 */
+		COLLECT( "Collect" );
 
 		private final String str;
 
@@ -63,9 +68,10 @@ public class ExtractSurfaceParameters implements Serializable
 				return new Max();
 			case MEDIAN:
 				return new Median();
+			case COLLECT:
+				throw new IllegalArgumentException( "Cannot project with the " + this + " method." );
 			default:
 				throw new IllegalArgumentException( "Unknown projection method: " + this + "." );
-
 			}
 		}
 	}

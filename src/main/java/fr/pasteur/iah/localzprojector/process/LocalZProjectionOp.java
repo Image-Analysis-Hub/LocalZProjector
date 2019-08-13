@@ -11,6 +11,7 @@ import org.scijava.display.DisplayService;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 
+import fr.pasteur.iah.localzprojector.process.ExtractSurfaceParameters.ProjectionMethod;
 import fr.pasteur.iah.localzprojector.util.AppUtil;
 import io.scif.services.DatasetIOService;
 import net.imagej.Dataset;
@@ -113,53 +114,82 @@ public class LocalZProjectionOp< T extends RealType< T > & NativeType< T > > ext
 			return input.duplicate();
 
 		/*
+		 * Do we have to project or collect a thick slice?
+		 */
+
+		boolean doCollect = false;
+		int deltaZCollect = 0;
+		final long nChannels = input.dimension( Axes.CHANNEL );
+		for ( int c = 0; c < nChannels; c++ )
+		{
+			if ( extractSurfaceParams.projectionMethod( c ).equals( ProjectionMethod.COLLECT ) )
+			{
+				doCollect = true;
+				deltaZCollect = Math.max( deltaZCollect, Math.abs( extractSurfaceParams.deltaZ( c ) ) );
+			}
+		}
+
+		final String outputName = doCollect
+				? "Local Volume of " + input.getName()
+				: "Local Z Projection of " + input.getName();
+
+		/*
 		 * Create output.
 		 */
 
-		final CalibratedAxis[] axes = new CalibratedAxis[ input.numDimensions() - 1 ];
+		final CalibratedAxis[] outputAxes = doCollect
+				? new CalibratedAxis[ input.numDimensions() ]
+				: new CalibratedAxis[ input.numDimensions() - 1 ];
+		final long[] outputDims = doCollect
+				? new long[ input.numDimensions() ]
+				: new long[ input.numDimensions() - 1 ];
+
 		int id = 0;
-		final long[] dims = new long[ input.numDimensions() - 1 ];
 		for ( int d = 0; d < input.numDimensions(); d++ )
 		{
 			if ( d == zAxis )
-				continue;
-			dims[ id ] = input.dimension( d );
-			axes[ id++ ] = input.axis( d );
+			{
+				if ( doCollect )
+				{
+					outputDims[ id ] = 1 + 2 * deltaZCollect;
+					outputAxes[ id++ ] = input.axis( d );
+				}
+				else
+					continue;
+			}
+			else
+			{
+				outputDims[ id ] = input.dimension( d );
+				outputAxes[ id++ ] = input.axis( d );
+			}
 		}
-		final Img< T > outImg = ops().create().img( FinalDimensions.wrap( dims ), ( T ) input.firstElement() );
-		final ImgPlus< T > outImgPlus = new ImgPlus<>( outImg, "Local Z Projection of " + input.getName(), axes );
+		final Img< T > outputImg = ops().create().img( FinalDimensions.wrap( outputDims ), ( T ) input.firstElement() );
+		final ImgPlus< T > outImgPlus = new ImgPlus<>( outputImg, outputName, outputAxes );
 		final DefaultDataset output = new DefaultDataset( ops().context(), outImgPlus );
 
 		/*
 		 * Stores reference surface in a dataset.
 		 */
 
-		// We want single channel.
-		final int cAxis = output.dimensionIndex( Axes.CHANNEL );
-		final ImgPlus< UnsignedShortType > imgPlus;
-		if ( cAxis < 0 )
+		// We want single channel & single Z.
+		final int cAxis = input.dimensionIndex( Axes.CHANNEL );
+		final long[] refSurfaceDims = cAxis < 0
+				? new long[ input.numDimensions() - 1 ]
+				: new long[ input.numDimensions() - 2 ];
+		final CalibratedAxis[] refSurfaceAxes = cAxis < 0
+				? new CalibratedAxis[ input.numDimensions() - 1 ]
+				: new CalibratedAxis[ input.numDimensions() - 2 ];
+		int id2 = 0;
+		for ( int d = 0; d < input.numDimensions(); d++ )
 		{
-			final Img< UnsignedShortType > rsImg = ops().create().img( output, new UnsignedShortType() );
-			imgPlus = new ImgPlus<>( rsImg, "Reference planes of " + input.getName(), axes );
+			if ( d == cAxis || d == zAxis )
+				continue;
+			refSurfaceDims[ id2 ] = input.dimension( d );
+			refSurfaceAxes[ id2++ ] = input.axis( d );
 		}
-		else
-		{
-			final CalibratedAxis[] axesRefSurface = new CalibratedAxis[ output.numDimensions() - 1 ];
-			int id2 = 0;
-			final long[] dimsRefSurface = new long[ output.numDimensions() - 1 ];
-			for ( int d = 0; d < output.numDimensions(); d++ )
-			{
-				if ( d == cAxis )
-					continue;
-				dimsRefSurface[ id2 ] = output.dimension( d );
-				axesRefSurface[ id2++ ] = output.axis( d );
-			}
-
-			final Img< UnsignedShortType > rsImg = ops().create().img( FinalDimensions.wrap( dimsRefSurface ), new UnsignedShortType() );
-			imgPlus = new ImgPlus<>( rsImg, "Reference planes of " + input.getName(), axesRefSurface );
-
-		}
-		referenceSurfaces = new DefaultDataset( ops().context(), imgPlus );
+		final Img< UnsignedShortType > refSurfaceImg = ops().create().img( FinalDimensions.wrap( refSurfaceDims ), new UnsignedShortType() );
+		final ImgPlus< UnsignedShortType > refSurfaceImgPlus = new ImgPlus<>( refSurfaceImg, "Reference surface of " + input.getName(), refSurfaceAxes );
+		referenceSurfaces = new DefaultDataset( ops().context(), refSurfaceImgPlus );
 
 		/*
 		 * Show output?
@@ -209,6 +239,7 @@ public class LocalZProjectionOp< T extends RealType< T > & NativeType< T > > ext
 		 * Process time-point by time-point.
 		 */
 
+		// Create reference surface op.
 		@SuppressWarnings( "rawtypes" )
 		final ReferenceSurfaceOp< T > referenceSurfaceOp = ( ReferenceSurfaceOp ) Functions.unary(
 				ops(),
@@ -217,13 +248,31 @@ public class LocalZProjectionOp< T extends RealType< T > & NativeType< T > > ext
 				ImgPlus.class,
 				referenceSurfaceParams );
 
-		@SuppressWarnings( "rawtypes" )
-		final ExtractSurfaceOp< T > extractSurfaceOp = ( ExtractSurfaceOp ) Computers.binary( ops(),
-				ExtractSurfaceOp.class,
-				RandomAccessibleInterval.class,
-				ImgPlus.class,
-				RandomAccessibleInterval.class,
-				extractSurfaceParams );
+		// Create projection op.
+		final ProjectorOp< T > projectorOp;
+		if ( doCollect )
+		{
+			@SuppressWarnings( "rawtypes" )
+			final CollectVolumeOp< T > lop = ( CollectVolumeOp ) Computers.binary( ops(),
+					CollectVolumeOp.class,
+					RandomAccessibleInterval.class,
+					ImgPlus.class,
+					RandomAccessibleInterval.class,
+					extractSurfaceParams,
+					deltaZCollect );
+			projectorOp = lop;
+		}
+		else
+		{
+			@SuppressWarnings( "rawtypes" )
+			final ExtractSurfaceOp< T > lop = ( ExtractSurfaceOp ) Computers.binary( ops(),
+					ExtractSurfaceOp.class,
+					RandomAccessibleInterval.class,
+					ImgPlus.class,
+					RandomAccessibleInterval.class,
+					extractSurfaceParams );
+			projectorOp = lop;
+		}
 
 		final long nFrames = input.getFrames();
 		for ( long t = 0; t < nFrames; t++ )
@@ -262,10 +311,10 @@ public class LocalZProjectionOp< T extends RealType< T > & NativeType< T > > ext
 
 			if ( isCanceled() )
 				return output;
-			cancelable = extractSurfaceOp;
+			cancelable = projectorOp;
 
 			final RandomAccessibleInterval< T > outputSlice = getOutputTimePoint( outImgPlus, t );
-			extractSurfaceOp.compute( tp, referenceSurface, outputSlice );
+			projectorOp.compute( tp, referenceSurface, outputSlice );
 
 			if ( showOutputDuringCalculation )
 			{
@@ -316,12 +365,12 @@ public class LocalZProjectionOp< T extends RealType< T > & NativeType< T > > ext
 				final String outputTpName = String.format( "%s_LocalProjection_%0" + ndigits + "d", inputName, t );
 				final CalibratedAxis[] outputTpAxes = new CalibratedAxis[ outputSlice.numDimensions() ];
 				// Remove T
-				int id2 = 0;
+				int id3 = 0;
 				for ( int d = 0; d < outImgPlus.numDimensions(); d++ )
 				{
 					if ( d == outImgPlus.dimensionIndex( Axes.TIME ) )
 						continue;
-					outputTpAxes[ id2++ ] = outImgPlus.axis( d );
+					outputTpAxes[ id3++ ] = outImgPlus.axis( d );
 				}
 
 				final ImgPlus< T > imgPlusOutputSingleTP = new ImgPlus< T >( wrapToImgPlus( outputSlice ), outputTpName, outputTpAxes );

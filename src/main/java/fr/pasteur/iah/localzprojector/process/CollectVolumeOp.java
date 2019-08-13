@@ -1,7 +1,5 @@
 package fr.pasteur.iah.localzprojector.process;
 
-import org.apache.commons.math3.stat.descriptive.AbstractUnivariateStatistic;
-import org.apache.commons.math3.util.ResizableDoubleArray;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 
@@ -19,8 +17,8 @@ import net.imglib2.type.numeric.integer.UnsignedShortType;
 import net.imglib2.view.IntervalView;
 import net.imglib2.view.Views;
 
-@Plugin( type = ExtractSurfaceOp.class )
-public class ExtractSurfaceOp< T extends RealType< T > & NativeType< T > >
+@Plugin( type = CollectVolumeOp.class )
+public class CollectVolumeOp< T extends RealType< T > & NativeType< T > >
 		extends AbstractBinaryComputerOp< ImgPlus< T >, RandomAccessibleInterval< UnsignedShortType >, RandomAccessibleInterval< T > >
 		implements ProjectorOp< T >
 {
@@ -29,10 +27,12 @@ public class ExtractSurfaceOp< T extends RealType< T > & NativeType< T > >
 	private ExtractSurfaceParameters params;
 
 	@Parameter
+	private int deltaZ = 0;
+
+	@Parameter
 	private OpService ops;
 
 	private String cancelReason;
-
 
 	@Override
 	public void compute( final ImgPlus< T > source, final RandomAccessibleInterval< UnsignedShortType > referenceSurface, final RandomAccessibleInterval< T > output )
@@ -66,43 +66,37 @@ public class ExtractSurfaceOp< T extends RealType< T > & NativeType< T > >
 				final IntervalView< T > channel = Views.hyperSlice( img, channelAxis, c );
 				final IntervalView< T > target = Views.hyperSlice( output, channelAxis, c );
 				processChannel( channel, c, referenceSurface, target );
+				if ( isCanceled() )
+					break;
 			}
 		}
 	}
 
 	private void processChannel( final RandomAccessibleInterval< T > channel, final int c, final RandomAccessibleInterval< UnsignedShortType > referenceSurface, final RandomAccessibleInterval< T > target )
 	{
-		final int offset = params.offset( c );
-		final int deltaZ = params.deltaZ( c );
-		final AbstractUnivariateStatistic projector = params.projectionMethod( c ).projector();
-		final Cursor< T > cursor = Views.iterable( target ).localizingCursor(); // 2D
-		final RandomAccess< UnsignedShortType > raReference = referenceSurface.randomAccess( referenceSurface ); // 2D
-		final RandomAccess< T > ra = channel.randomAccess( channel ); // 3D
-		final ResizableDoubleArray arr = new ResizableDoubleArray();
 
+		final Cursor< T > cursor = Views.iterable( target ).localizingCursor(); // 3D
+		final RandomAccess< UnsignedShortType > raReference = referenceSurface.randomAccess( referenceSurface ); // 2D
+		final RandomAccess< T > raInput = Views.extendZero( channel ).randomAccess(); // 3D
+
+		// Iterate over output.
 		while ( cursor.hasNext() )
 		{
 			cursor.fwd();
-			raReference.setPosition( cursor );
-			ra.setPosition( cursor.getLongPosition( 0 ), 0 );
-			ra.setPosition( cursor.getLongPosition( 1 ), 1 );
 
-			final long zmin = Math.max( 0,
-					Math.min( channel.dimension( 2 ) - 1,
-							raReference.get().get() + offset - deltaZ ) );
-			final long zmax = Math.max( 0,
-					Math.min( channel.dimension( 2 ) - 1,
-							raReference.get().get() + offset + deltaZ ) );
+			// Read offset set by the reference surface.
+			raReference.setPosition( cursor.getLongPosition( 0 ), 0 );
+			raReference.setPosition( cursor.getLongPosition( 1 ), 1 );
+			final int referenceOffset = raReference.get().get();
 
+			// Position the input cursor at the right z.
+			final long zTarget = cursor.getLongPosition( 2 );
+			raInput.setPosition( cursor.getLongPosition( 0 ), 0 );
+			raInput.setPosition( cursor.getLongPosition( 1 ), 1 );
+			raInput.setPosition( referenceOffset - deltaZ + zTarget + params.offset( c ), 2 );
 
-			arr.clear();
-			for ( long z = zmin; z <= zmax; z++ )
-			{
-				ra.setPosition( z, 2 );
-				arr.addElement( ra.get().getRealDouble() );
-
-			}
-			cursor.get().setReal( projector.evaluate( arr.getElements() ) );
+			// Copy values.
+			cursor.get().set( raInput.get() );
 		}
 	}
 
