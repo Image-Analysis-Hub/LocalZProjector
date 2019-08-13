@@ -106,10 +106,10 @@ public class ReferenceSurfacePanel extends JPanel
 
 		final int targetChannel = Math.max( 0, Math.min( nChannels - 1, prefs.getInt( ReferenceSurfaceParameters.class, TARGET_CHANNEL_PREF_NAME, 0 ) ) );
 		final Method method = ReferenceSurfaceParameters.Method.values()[ prefs.getInt( ReferenceSurfaceParameters.class, METHOD_PREF_NAME, 0 ) ];
-		final int filterWindowSize = prefs.getInt( ReferenceSurfaceParameters.class, FILTER_WINDOW_SIZE_PREF_NAME, 21 );
-		final double sigma = prefs.getDouble( ReferenceSurfaceParameters.class, SIGMA_PREF_NAME, 0. );
-		final int medianSize = prefs.getInt( ReferenceSurfaceParameters.class, MEDIAN_SIZE_PREF_NAME, 41 );
-		final int binning = prefs.getInt( ReferenceSurfaceParameters.class, BINNING_PREF_NAME, 1 );
+		final int filterWindowSize = Math.max( 1, Math.min( 100, prefs.getInt( ReferenceSurfaceParameters.class, FILTER_WINDOW_SIZE_PREF_NAME, 21 ) ) );
+		final double sigma = Math.max( 0., prefs.getDouble( ReferenceSurfaceParameters.class, SIGMA_PREF_NAME, 0. ) );
+		final int medianSize = Math.max( 1, Math.min( 1000, prefs.getInt( ReferenceSurfaceParameters.class, MEDIAN_SIZE_PREF_NAME, 41 ) ) );
+		final int binning = Math.max( 1, Math.min( 100, prefs.getInt( ReferenceSurfaceParameters.class, BINNING_PREF_NAME, 1 ) ) );
 
 		final JLabel lblReferenceSurface = new JLabel( "Reference surface." );
 		lblReferenceSurface.setHorizontalAlignment( JLabel.CENTER );
