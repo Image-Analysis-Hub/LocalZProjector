@@ -11,10 +11,10 @@ import javax.swing.JSeparator;
 import javax.swing.SwingConstants;
 
 import org.scijava.prefs.PrefService;
+import org.scijava.util.VersionUtils;
 
 import fr.pasteur.iah.localzprojector.process.ExtractSurfaceParameters;
 import fr.pasteur.iah.localzprojector.process.ReferenceSurfaceParameters;
-import fr.pasteur.iah.localzprojector.util.AppUtil;
 import net.imagej.Dataset;
 
 public class GuiPanel extends JPanel
@@ -74,7 +74,7 @@ public class GuiPanel extends JPanel
 		 * Title.
 		 */
 
-		final JLabel lblTitle = new JLabel( "<html>\n<center>\n<big>Local Z Projector.</big>\n<p>\nv" + AppUtil.getVersion() + "\n</center>\n</html>" );
+		final JLabel lblTitle = new JLabel( "<html>\n<center>\n<big>Local Z Projector.</big>\n<p>\nv" + VersionUtils.getVersion( GuiPanel.class ) + "\n</center>\n</html>" );
 		lblTitle.setHorizontalAlignment( SwingConstants.CENTER );
 		lblTitle.setAlignmentX( 0.5f );
 		add( lblTitle );

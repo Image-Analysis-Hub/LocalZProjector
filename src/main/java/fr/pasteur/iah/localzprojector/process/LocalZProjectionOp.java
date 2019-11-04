@@ -10,9 +10,9 @@ import org.scijava.app.StatusService;
 import org.scijava.display.DisplayService;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
+import org.scijava.util.VersionUtils;
 
 import fr.pasteur.iah.localzprojector.process.ExtractSurfaceParameters.ProjectionMethod;
-import fr.pasteur.iah.localzprojector.util.AppUtil;
 import io.scif.services.DatasetIOService;
 import net.imagej.Dataset;
 import net.imagej.DefaultDataset;
@@ -533,6 +533,6 @@ public class LocalZProjectionOp< T extends RealType< T > & NativeType< T > > ext
 	 */
 	public String getVersion()
 	{
-		return AppUtil.getVersion();
+		return VersionUtils.getVersion( LocalZProjectionOp.class );
 	}
 }
