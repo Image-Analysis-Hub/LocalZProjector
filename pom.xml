@@ -29,6 +29,7 @@
 	</licenses>
 
 	<properties>
+		<package-name>fr.pasteur.iah.localzprojector</package-name>
 		<!-- Target Fiji dir for clean upload. -->
 		<imagej.app.directory>../Fiji.app/</imagej.app.directory>
 		<license.licenseName>bsd_v3</license.licenseName>
