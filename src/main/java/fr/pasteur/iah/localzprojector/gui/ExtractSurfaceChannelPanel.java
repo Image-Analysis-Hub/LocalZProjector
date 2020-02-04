@@ -39,14 +39,22 @@ public class ExtractSurfaceChannelPanel extends JPanel
 
 	private final int channel;
 
-	public ExtractSurfaceChannelPanel( final int channel, final int nZSlices, final PrefService prefs )
+	public ExtractSurfaceChannelPanel( final int channel, int nZSlices, final PrefService prefs )
 	{
+		nZSlices = Math.abs( nZSlices );
+
 		/*
 		 * Default and persistence.
 		 */
 
-		final int offset = prefs.getInt( ExtractSurfaceParameters.class, OFFSETS_PREF_NAME + channel, 0 );
-		final int deltaZ = prefs.getInt( ExtractSurfaceParameters.class, DELTA_Z_PREF_NAME + channel, 0 );
+		int offset = prefs.getInt( ExtractSurfaceParameters.class, OFFSETS_PREF_NAME + channel, 0 );
+		offset = Math.min( nZSlices, offset );
+		offset = Math.max( -nZSlices, offset );
+
+		int deltaZ = prefs.getInt( ExtractSurfaceParameters.class, DELTA_Z_PREF_NAME + channel, 0 );
+		deltaZ = Math.min( nZSlices, deltaZ );
+		deltaZ = Math.max( -nZSlices, deltaZ );
+
 		final ProjectionMethod method = ProjectionMethod.values()[ prefs.getInt( ExtractSurfaceParameters.class, METHOD_PREF_NAME + channel, 0 ) ];
 
 		/*
