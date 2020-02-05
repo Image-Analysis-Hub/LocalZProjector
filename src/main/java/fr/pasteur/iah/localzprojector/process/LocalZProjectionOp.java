@@ -13,6 +13,7 @@ import org.scijava.plugin.Plugin;
 import org.scijava.util.VersionUtils;
 
 import fr.pasteur.iah.localzprojector.process.ExtractSurfaceParameters.ProjectionMethod;
+import fr.pasteur.iah.localzprojector.util.ImgPlusUtil;
 import io.scif.services.DatasetIOService;
 import net.imagej.Dataset;
 import net.imagej.DefaultDataset;
@@ -29,7 +30,6 @@ import net.imagej.ops.special.function.Functions;
 import net.imglib2.FinalDimensions;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.img.Img;
-import net.imglib2.img.ImgFactory;
 import net.imglib2.img.ImgView;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.RealType;
@@ -43,22 +43,22 @@ public class LocalZProjectionOp< T extends RealType< T > & NativeType< T > > ext
 {
 
 	@Parameter( type = ItemIO.INPUT )
-	private ReferenceSurfaceParameters referenceSurfaceParams;
+	protected ReferenceSurfaceParameters referenceSurfaceParams;
 
 	@Parameter( type = ItemIO.INPUT )
-	private ExtractSurfaceParameters extractSurfaceParams;
+	protected ExtractSurfaceParameters extractSurfaceParams;
 
 	@Parameter( type = ItemIO.INPUT, required = false )
-	private boolean showReferenceSurface = false;
+	protected boolean showReferenceSurface = false;
 
 	@Parameter( type = ItemIO.INPUT, required = false )
-	private boolean showOutputDuringCalculation = false;
+	protected boolean showOutputDuringCalculation = false;
 
 	@Parameter( type = ItemIO.INPUT, required = false )
-	private boolean saveAtEachTimePoint = false;
+	protected boolean saveAtEachTimePoint = false;
 
 	@Parameter( type = ItemIO.INPUT, required = false )
-	private String saveFolder = System.getProperty( "user.home" );
+	protected String saveFolder = System.getProperty( "user.home" );
 
 	/**
 	 * Specifies whether the source image is opened as a virtual stack.
@@ -79,20 +79,20 @@ public class LocalZProjectionOp< T extends RealType< T > & NativeType< T > > ext
 	private boolean isVirtual = false;
 
 	@Parameter
-	private DisplayService displayService;
+	protected DisplayService displayService;
 
 	@Parameter
-	private StatusService status;
+	protected StatusService status;
 
 	@Parameter
-	private DatasetIOService ioService;
+	protected DatasetIOService ioService;
 
 	@Parameter
 	private AutoscaleService autoscaleService;
 
-	private String cancelReason;
+	protected String cancelReason;
 
-	private Cancelable cancelable;
+	protected Cancelable cancelable;
 
 	/**
 	 * Stores the reference surface.
@@ -289,7 +289,7 @@ public class LocalZProjectionOp< T extends RealType< T > & NativeType< T > > ext
 				return output;
 			cancelable = referenceSurfaceOp;
 
-			final RandomAccessibleInterval< T > channel = getChannel( tp, referenceSurfaceParams.targetChannel );
+			final ImgPlus< T > channel = ImgPlusUtil.hypersliceChannel( tp, referenceSurfaceParams.targetChannel );
 			final Img< UnsignedShortType > referenceSurface = referenceSurfaceOp.calculate( channel );
 			copyOnReferenceSurfaceOutput( referenceSurface, ( ImgPlus< UnsignedShortType > ) referenceSurfaces.getImgPlus(), t );
 
@@ -313,7 +313,7 @@ public class LocalZProjectionOp< T extends RealType< T > & NativeType< T > > ext
 				return output;
 			cancelable = projectorOp;
 
-			final RandomAccessibleInterval< T > outputSlice = getOutputTimePoint( outImgPlus, t );
+			final ImgPlus< T > outputSlice = ImgPlusUtil.hypersliceTimePoint( outImgPlus, t );
 			projectorOp.compute( tp, referenceSurface, outputSlice );
 
 			if ( showOutputDuringCalculation )
@@ -363,17 +363,8 @@ public class LocalZProjectionOp< T extends RealType< T > & NativeType< T > > ext
 				}
 
 				final String outputTpName = String.format( "%s_LocalProjection_%0" + ndigits + "d", inputName, t );
-				final CalibratedAxis[] outputTpAxes = new CalibratedAxis[ outputSlice.numDimensions() ];
-				// Remove T
-				int id3 = 0;
-				for ( int d = 0; d < outImgPlus.numDimensions(); d++ )
-				{
-					if ( d == outImgPlus.dimensionIndex( Axes.TIME ) )
-						continue;
-					outputTpAxes[ id3++ ] = outImgPlus.axis( d );
-				}
-
-				final ImgPlus< T > imgPlusOutputSingleTP = new ImgPlus< T >( wrapToImgPlus( outputSlice ), outputTpName, outputTpAxes );
+				final CalibratedAxis[] outputTpAxes = ImgPlusUtil.hypersliceAxes( outImgPlus, Axes.TIME );
+				final ImgPlus< T > imgPlusOutputSingleTP = new ImgPlus< T >( ImgPlusUtil.wrapToImgPlus( outputSlice ), outputTpName, outputTpAxes );
 				final Dataset outputTpDataset = new DefaultDataset( ioService.context(), imgPlusOutputSingleTP );
 
 				final Path destination = Paths.get( saveFolder, outputTpName + ".tif" );
@@ -419,26 +410,6 @@ public class LocalZProjectionOp< T extends RealType< T > & NativeType< T > > ext
 		}
 	}
 
-	private RandomAccessibleInterval< T > getChannel( final ImgPlus< T > img, final long c )
-	{
-		final int channelAxis = img.dimensionIndex( Axes.CHANNEL );
-		final RandomAccessibleInterval< T > rai;
-		if ( channelAxis >= 0 )
-			rai = Views.hyperSlice( img, channelAxis, c );
-		else
-			rai = img;
-		return rai;
-	}
-
-	private RandomAccessibleInterval< T > getOutputTimePoint( final ImgPlus< T > output, final long t )
-	{
-		final int timeAxis = output.dimensionIndex( Axes.TIME );
-		if ( timeAxis < 0 )
-			return output;
-
-		return Views.hyperSlice( output, timeAxis, t );
-	}
-
 	public static final < T extends RealType< T > & NativeType< T > > ImgPlus< T > getSourceTimePoint( final ImgPlus< T > img, final long t, final OpEnvironment ops, final boolean isVirtual )
 	{
 		final int timeAxis = img.dimensionIndex( Axes.TIME );
@@ -481,29 +452,6 @@ public class LocalZProjectionOp< T extends RealType< T > & NativeType< T > > ext
 		}
 		final ImgPlus< T > imgPlus = new ImgPlus<>( copy, "Time-point " + t + "  of " + img.getName(), axes );
 		return imgPlus;
-	}
-
-	private ImgPlus< T > wrapToImgPlus(
-			final RandomAccessibleInterval< T > rai )
-	{
-		if ( rai instanceof ImgPlus )
-			return ( ImgPlus< T > ) rai;
-		return new ImgPlus<>( wrapToImg( rai ) );
-	}
-
-	private Img< T > wrapToImg(
-			final RandomAccessibleInterval< T > rai )
-	{
-		if ( rai instanceof Img )
-			return ( Img< T > ) rai;
-		return ImgView.wrap( rai, imgFactory( rai ) );
-	}
-
-	private ImgFactory< T > imgFactory(
-			final RandomAccessibleInterval< T > rai )
-	{
-		final T type = Util.getTypeFromInterval( rai );
-		return Util.getSuitableImgFactory( rai, type );
 	}
 
 	@Override
