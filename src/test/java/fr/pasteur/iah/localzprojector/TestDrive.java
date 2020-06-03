@@ -65,6 +65,10 @@ public class TestDrive
 				extractSurfaceParameters,
 				showReferencePlane,
 				showOutputDuringCalculation );
+
+		final long start = System.currentTimeMillis();
 		localZProjectionOp.calculate( dataset );
+		final long end = System.currentTimeMillis();
+		System.out.println( String.format( "Projection time: %.2f s.", ( end - start ) / 1000. ) );
 	}
 }
