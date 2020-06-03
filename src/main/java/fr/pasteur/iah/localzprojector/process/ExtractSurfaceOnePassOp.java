@@ -108,9 +108,7 @@ public class ExtractSurfaceOnePassOp< T extends RealType< T > & NativeType< T > 
 		case COLLECT:
 			throw new IllegalArgumentException( "Cannot project with the " + projectionMethod + " method." );
 		case MEAN:
-		case MEDIAN:
 			accumulator = new MeanAccumulator< T >( target );
-			// We cannot do median, so we do it as mean.
 			break;
 		case MIP:
 			accumulator = new MIPAccumulator< T >( target );

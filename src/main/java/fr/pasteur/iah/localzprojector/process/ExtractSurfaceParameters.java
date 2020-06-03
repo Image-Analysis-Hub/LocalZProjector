@@ -14,7 +14,6 @@ import java.util.Map;
 import org.apache.commons.math3.stat.descriptive.AbstractUnivariateStatistic;
 import org.apache.commons.math3.stat.descriptive.moment.Mean;
 import org.apache.commons.math3.stat.descriptive.rank.Max;
-import org.apache.commons.math3.stat.descriptive.rank.Median;
 
 public class ExtractSurfaceParameters implements Serializable
 {
@@ -35,10 +34,6 @@ public class ExtractSurfaceParameters implements Serializable
 		 * Take the mean intensity along Z.
 		 */
 		MEAN( "Mean" ),
-		/**
-		 * Take the median intensity along Z.
-		 */
-		MEDIAN( "Median" ),
 		/**
 		 * Do not project but instead collect all the specified slices around
 		 * the reference surface.
@@ -66,8 +61,6 @@ public class ExtractSurfaceParameters implements Serializable
 				return new Mean();
 			case MIP:
 				return new Max();
-			case MEDIAN:
-				return new Median();
 			case COLLECT:
 				throw new IllegalArgumentException( "Cannot project with the " + this + " method." );
 			default:
