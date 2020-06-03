@@ -1,4 +1,4 @@
-package fr.pasteur.iah.localzprojector.process;
+package fr.pasteur.iah.localzprojector.process.offline;
 
 import java.util.function.BiConsumer;
 
@@ -8,6 +8,7 @@ import org.scijava.plugin.Plugin;
 import org.scijava.thread.ThreadService;
 
 import fr.pasteur.iah.localzprojector.binning.BinningOp;
+import fr.pasteur.iah.localzprojector.process.ReferenceSurfaceParameters;
 import fr.pasteur.iah.localzprojector.util.GridProcessingOp;
 import net.imagej.ImgPlus;
 import net.imagej.ops.OpService;
@@ -171,7 +172,7 @@ public class FilterBasedOnePassProjectorOp< T extends RealType< T > & NativeType
 			ops().run( ChunkerOp.class, new CursorBasedChunk()
 			{
 				@Override
-				public void execute( final int startIndex, final int stepSize, final int numSteps )
+				public void execute( final long startIndex, final long stepSize, final long numSteps )
 				{
 					final Cursor< T > filteredCursor = filtered.localizingCursor();
 					final RandomAccess< T > raMaxValue = maxValueImg.randomAccess( maxValueImg );

@@ -1,4 +1,4 @@
-package fr.pasteur.iah.localzprojector.process;
+package fr.pasteur.iah.localzprojector.process.offline;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -12,6 +12,8 @@ import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 import org.scijava.util.VersionUtils;
 
+import fr.pasteur.iah.localzprojector.process.LocalZProjectionOp;
+import fr.pasteur.iah.localzprojector.process.ReferenceSurfaceParameters;
 import fr.pasteur.iah.localzprojector.util.ImgPlusUtil;
 import io.scif.services.DatasetIOService;
 import net.imagej.Dataset;

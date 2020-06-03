@@ -1,4 +1,4 @@
-package fr.pasteur.iah.localzprojector.process;
+package fr.pasteur.iah.localzprojector.process.offline;
 
 import org.scijava.Cancelable;
 
