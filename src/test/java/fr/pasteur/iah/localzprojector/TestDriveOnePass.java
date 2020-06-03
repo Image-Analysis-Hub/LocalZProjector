@@ -6,9 +6,9 @@ import java.util.Locale;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 
-import fr.pasteur.iah.localzprojector.process.LocalZProjectionOnePassOp;
 import fr.pasteur.iah.localzprojector.process.ReferenceSurfaceParameters;
 import fr.pasteur.iah.localzprojector.process.ReferenceSurfaceParameters.Method;
+import fr.pasteur.iah.localzprojector.process.offline.LocalZProjectionOnePassOp;
 import net.imagej.Dataset;
 import net.imagej.ImageJ;
 import net.imagej.ops.special.function.Functions;
@@ -55,5 +55,7 @@ public class TestDriveOnePass
 				showReferencePlane,
 				showOutputDuringCalculation );
 		localZProjectionOnePassOp.calculate( dataset );
+
+		System.out.println( "Done" );
 	}
 }
