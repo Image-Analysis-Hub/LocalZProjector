@@ -60,24 +60,6 @@ public class LocalZProjectionOp< T extends RealType< T > & NativeType< T > > ext
 	@Parameter( type = ItemIO.INPUT, required = false )
 	protected String saveFolder = System.getProperty( "user.home" );
 
-	/**
-	 * Specifies whether the source image is opened as a virtual stack.
-	 * <p>
-	 * For large movies it is a good idea to copy a full 3D+C stack on a new
-	 * Img. Why? Because when movies are very big they will be opened as a
-	 * virtual stack in ImageJ. Virtual stacks are cool, but a disk access
-	 * happens every-time we change the Z position. And when we do the extract
-	 * of the surface, we iterate along Z for each XY position. This copy here
-	 * works like a simple cache for 3D.
-	 * <p>
-	 * But it takes time, which might slow down process when we have only one
-	 * time-point, but a large 3D image that fits into memory. So we let the
-	 * user specifies whether the source movie is virtual (do a copy) or not (no
-	 * copy needed, the default).
-	 */
-	@Parameter( type = ItemIO.INPUT, required = false )
-	private boolean isVirtual = false;
-
 	@Parameter
 	protected DisplayService displayService;
 
@@ -265,8 +247,8 @@ public class LocalZProjectionOp< T extends RealType< T > & NativeType< T > > ext
 		else
 		{
 			@SuppressWarnings( "rawtypes" )
-			final ExtractSurfaceOp< T > lop = ( ExtractSurfaceOp ) Computers.binary( ops(),
-					ExtractSurfaceOp.class,
+			final ProjectorOp< T > lop = ( ExtractSurfaceOnePassOp ) Computers.binary( ops(),
+					ExtractSurfaceOnePassOp.class,
 					RandomAccessibleInterval.class,
 					ImgPlus.class,
 					RandomAccessibleInterval.class,
@@ -279,7 +261,7 @@ public class LocalZProjectionOp< T extends RealType< T > & NativeType< T > > ext
 		{
 
 			status.showStatus( "Processing time-point " + t );
-			final ImgPlus< T > tp = getSourceTimePoint( ( ImgPlus< T > ) input.getImgPlus(), t, ops(), isVirtual );
+			final ImgPlus< T > tp = getSourceTimePoint( ( ImgPlus< T > ) input.getImgPlus(), t, ops() );
 
 			/*
 			 * Get reference surface.
@@ -379,7 +361,7 @@ public class LocalZProjectionOp< T extends RealType< T > & NativeType< T > > ext
 
 			}
 
-			status.showProgress( ( int ) t, ( int ) nFrames );
+			status.showProgress( ( int ) t + 1, ( int ) nFrames );
 		}
 
 		return output;
@@ -410,36 +392,14 @@ public class LocalZProjectionOp< T extends RealType< T > & NativeType< T > > ext
 		}
 	}
 
-	public static final < T extends RealType< T > & NativeType< T > > ImgPlus< T > getSourceTimePoint( final ImgPlus< T > img, final long t, final OpEnvironment ops, final boolean isVirtual )
+	public static final < T extends RealType< T > & NativeType< T > > ImgPlus< T > getSourceTimePoint( final ImgPlus< T > img, final long t, final OpEnvironment ops )
 	{
 		final int timeAxis = img.dimensionIndex( Axes.TIME );
 		if ( timeAxis < 0 )
 			return img;
 
 		final IntervalView< T > tp = Views.hyperSlice( img, timeAxis, t );
-		final Img< T > copy;
-		if ( isVirtual )
-		{
-			/*
-			 * For large images it is a good idea to copy a full 3D+C stack on a
-			 * new Img.
-			 *
-			 * Why? Because when images are very big they will be opened as a
-			 * virtual stack in ImageJ. Virtual stacks are cool, but a disk
-			 * access happens every-time we change the Z position. And when we
-			 * do the extract of the surface, we iterate along Z for each XY
-			 * position. This copy here works like a simple cache for 3D.
-			 */
-			copy = ops.create().img( tp, img.firstElement() );
-			ops.copy().rai( copy, tp );
-		}
-		else
-		{
-			/*
-			 * The line below is a method that does not do any duplication.
-			 */
-			copy = ImgView.wrap( tp, Util.getArrayOrCellImgFactory( tp, img.firstElement() ) );
-		}
+		final Img< T > copy = ImgView.wrap( tp, Util.getArrayOrCellImgFactory( tp, img.firstElement() ) );
 
 		// Put back axes.
 		final CalibratedAxis[] axes = new CalibratedAxis[ img.numDimensions() - 1 ];
