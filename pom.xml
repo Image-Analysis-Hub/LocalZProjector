@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.scijava</groupId>
 		<artifactId>pom-scijava</artifactId>
-		<version>27.0.1</version>
+		<version>29.0.0-beta-1</version>
 		<relativePath />
 	</parent>
 
@@ -72,11 +72,11 @@
 			<artifactId>imagej-legacy</artifactId>
 		</dependency>
 		
-		
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-math3</artifactId>
 		</dependency>
+
 	</dependencies>
 
 	<developers>
