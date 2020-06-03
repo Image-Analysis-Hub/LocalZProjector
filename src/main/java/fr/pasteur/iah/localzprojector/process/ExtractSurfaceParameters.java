@@ -11,10 +11,6 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.commons.math3.stat.descriptive.AbstractUnivariateStatistic;
-import org.apache.commons.math3.stat.descriptive.moment.Mean;
-import org.apache.commons.math3.stat.descriptive.rank.Max;
-
 public class ExtractSurfaceParameters implements Serializable
 {
 
@@ -51,21 +47,6 @@ public class ExtractSurfaceParameters implements Serializable
 		public String toString()
 		{
 			return str;
-		}
-
-		public AbstractUnivariateStatistic projector()
-		{
-			switch ( this )
-			{
-			case MEAN:
-				return new Mean();
-			case MIP:
-				return new Max();
-			case COLLECT:
-				throw new IllegalArgumentException( "Cannot project with the " + this + " method." );
-			default:
-				throw new IllegalArgumentException( "Unknown projection method: " + this + "." );
-			}
 		}
 	}
 

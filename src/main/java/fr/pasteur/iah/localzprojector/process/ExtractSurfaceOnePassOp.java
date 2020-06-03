@@ -24,8 +24,7 @@ import net.imglib2.view.IntervalView;
 import net.imglib2.view.Views;
 
 /**
- * This {@link ProjectorOp} works like its peer {@link ExtractSurfaceOp}, but
- * works z-slice-by-slice.
+ * This {@link ProjectorOp} works z-slice-by-slice.
  * <p>
  * This is important for large images, that are loaded from Fiji using the
  * "virtual stack". For these stacks, they are loaded in memory only on request,
