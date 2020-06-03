@@ -56,7 +56,7 @@ public class UnBinningOp< T extends RealType< T > & NativeType< T > > extends Ab
 		ops().run( ChunkerOp.class, new CursorBasedChunk()
 		{
 			@Override
-			public void execute( final int startIndex, final int stepSize, final int numSteps )
+			public void execute( final long startIndex, final long stepSize, final long numSteps )
 			{
 				final RandomAccess< T > ra = extended.randomAccess();
 				final long[] currPos = new long[ input.numDimensions() ];

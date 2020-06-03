@@ -72,7 +72,7 @@ public class BinningOp< T extends RealType< T > > extends AbstractUnaryFunctionO
 		ops().run( ChunkerOp.class, new CursorBasedChunk()
 		{
 			@Override
-			public void execute( final int startIndex, final int stepSize, final int numSteps )
+			public void execute( final long startIndex, final long stepSize, final long numSteps )
 			{
 				final RandomAccess< Neighborhood< T > > ra = ran.randomAccess( input );
 				final long[] currPos = new long[ input.numDimensions() ];
