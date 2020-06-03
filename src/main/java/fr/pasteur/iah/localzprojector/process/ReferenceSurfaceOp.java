@@ -16,8 +16,6 @@ import net.imagej.ops.OpService;
 import net.imagej.ops.special.computer.Computers;
 import net.imagej.ops.special.function.AbstractUnaryFunctionOp;
 import net.imagej.ops.special.function.Functions;
-import net.imagej.ops.thread.chunker.ChunkerOp;
-import net.imagej.ops.thread.chunker.CursorBasedChunk;
 import net.imglib2.Cursor;
 import net.imglib2.Dimensions;
 import net.imglib2.FinalDimensions;
@@ -71,6 +69,7 @@ public class ReferenceSurfaceOp< T extends RealType< T > & NativeType< T > > ext
 		// Create output. Store the Z value for max.
 		final ImgFactory< UnsignedShortType > intFactory = Util.getArrayOrCellImgFactory( binnedSize, new UnsignedShortType() );
 		final Img< UnsignedShortType > output = intFactory.create( binnedSize );
+		final RandomAccess< UnsignedShortType > ra = output.randomAccess( output );
 
 		// Temp storage for max value.
 		final ImgFactory< T > factory = intFactory.imgFactory( Util.getTypeFromInterval( source ) );
@@ -156,34 +155,23 @@ public class ReferenceSurfaceOp< T extends RealType< T > & NativeType< T > > ext
 				throw new IllegalArgumentException( "Unkown filtering method: " + params.method + "." );
 			}
 
-			// Update reference map, multithreaded.
-			final int localZ = z;
-			ops().run( ChunkerOp.class, new CursorBasedChunk()
+			// Same iteration order.
+			final Cursor< T > filteredCursor = filtered.cursor();
+			final Cursor< T > maxValCursor = maxValueImg.cursor();
+			while ( filteredCursor.hasNext() )
 			{
+				filteredCursor.fwd();
+				final double filteredValue = filteredCursor.get().getRealDouble();
+				maxValCursor.fwd();
+				final double maxValue = maxValCursor.get().getRealDouble();
 
-				@Override
-				public void execute( final long startIndex, final long stepSize, final long numSteps )
+				if ( filteredValue > maxValue )
 				{
-					final Cursor< T > filteredCursor = filtered.localizingCursor();
-					final RandomAccess< T > raMaxValue = maxValueImg.randomAccess( maxValueImg );
-					final RandomAccess< UnsignedShortType > ra = output.randomAccess( output );
-
-					filteredCursor.jumpFwd( startIndex );
-					for ( int i = 0; i < numSteps; ++i )
-					{
-						filteredCursor.next();
-						raMaxValue.setPosition( filteredCursor );
-						final double filteredValue = filteredCursor.get().getRealDouble();
-						final double maxValue = raMaxValue.get().getRealDouble();
-
-						if ( filteredValue > maxValue )
-						{
-							raMaxValue.get().setReal( filteredValue );
-							ra.get().set( localZ );
-						}
-					}
+					maxValCursor.get().setReal( filteredValue );
+					ra.setPosition( maxValCursor );
+					ra.get().set( z );
 				}
-			}, filtered.size() );
+			}
 		}
 
 		if ( isCanceled() )
