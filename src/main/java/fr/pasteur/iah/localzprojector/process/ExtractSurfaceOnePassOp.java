@@ -1,5 +1,6 @@
 package fr.pasteur.iah.localzprojector.process;
 
+import org.scijava.listeners.Listeners;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 
@@ -50,6 +51,8 @@ public class ExtractSurfaceOnePassOp< T extends RealType< T > & NativeType< T > 
 	private OpService ops;
 
 	private String cancelReason;
+
+	private Listeners.List< SliceProcessListener > listeners = new Listeners.List<>();
 
 	@Override
 	public void compute( final ImgPlus< T > source, final RandomAccessibleInterval< UnsignedShortType > referenceSurface, final RandomAccessibleInterval< T > output )
@@ -124,20 +127,27 @@ public class ExtractSurfaceOnePassOp< T extends RealType< T > & NativeType< T > 
 		final RandomAccess< UnsignedShortType > raReference = referenceSurface.randomAccess( referenceSurface ); // 2D
 		for ( long z = minZ; z <= maxZ; z++ )
 		{
+			final long localZ = z;
 			if ( isCanceled() )
 				break;
 
-			final Cursor< T > cursor = Views.hyperSlice( channel, 2, z ).localizingCursor();
+			final Cursor< T > cursor = Views.hyperSlice( channel, 2, localZ ).localizingCursor();
 			while ( cursor.hasNext() )
 			{
 				cursor.fwd();
 				raReference.setPosition( cursor );
 
 				final int surfaceZ = raReference.get().get();
-				if ( z >= surfaceZ + offset - deltaZ && z <= surfaceZ + offset + deltaZ )
+				if ( localZ >= surfaceZ + offset - deltaZ && localZ <= surfaceZ + offset + deltaZ )
 					accumulator.accumulate( cursor.get(), cursor );
 			}
+			listeners.list.forEach( l -> l.sliceProcessed( localZ ) );
 		}
+	}
+
+	public Listeners.List< SliceProcessListener > getListeners()
+	{
+		return listeners;
 	}
 
 	/**
@@ -146,7 +156,6 @@ public class ExtractSurfaceOnePassOp< T extends RealType< T > & NativeType< T > 
 	private static interface Accumulator< T extends RealType< T > & NativeType< T > >
 	{
 		public void accumulate( T val, final Localizable pos );
-
 	}
 
 	private static final class MeanAccumulator< T extends RealType< T > & NativeType< T > > implements Accumulator< T >
@@ -203,6 +212,11 @@ public class ExtractSurfaceOnePassOp< T extends RealType< T > & NativeType< T > 
 				ra.get().set( val );
 		}
 
+	}
+
+	public interface SliceProcessListener
+	{
+		public void sliceProcessed( long z );
 	}
 
 	@Override

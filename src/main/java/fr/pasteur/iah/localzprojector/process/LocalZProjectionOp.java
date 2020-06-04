@@ -247,12 +247,16 @@ public class LocalZProjectionOp< T extends RealType< T > & NativeType< T > > ext
 		else
 		{
 			@SuppressWarnings( "rawtypes" )
-			final ProjectorOp< T > lop = ( ExtractSurfaceOnePassOp ) Computers.binary( ops(),
+			final ExtractSurfaceOnePassOp< T > lop = ( ExtractSurfaceOnePassOp ) Computers.binary( ops(),
 					ExtractSurfaceOnePassOp.class,
 					RandomAccessibleInterval.class,
 					ImgPlus.class,
 					RandomAccessibleInterval.class,
 					extractSurfaceParams );
+			
+			if ( showOutputDuringCalculation )
+				lop.getListeners().add( ( z ) -> projectionDisplay.update() );
+				
 			projectorOp = lop;
 		}
 
