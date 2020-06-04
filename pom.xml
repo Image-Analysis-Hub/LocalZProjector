@@ -72,8 +72,14 @@
 			<artifactId>imagej-legacy</artifactId>
 		</dependency>
 		
+		<!-- SciJava common dependencies -->		
+		<dependency>
+			<groupId>org.scijava</groupId>
+			<artifactId>scijava-listeners</artifactId>
+			<version>1.0.0-beta-2</version>
+		</dependency>
+		
 		<!-- BDV dependencies -->
-
 		<dependency>
 			<groupId>sc.fiji</groupId>
 			<artifactId>bigdataviewer-core</artifactId>
