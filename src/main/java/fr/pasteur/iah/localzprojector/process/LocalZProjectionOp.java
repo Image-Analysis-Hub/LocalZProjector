@@ -14,6 +14,8 @@ import org.scijava.util.VersionUtils;
 
 import fr.pasteur.iah.localzprojector.process.ExtractSurfaceParameters.ProjectionMethod;
 import fr.pasteur.iah.localzprojector.util.ImgPlusUtil;
+import ij.IJ;
+import ij.ImagePlus;
 import io.scif.services.DatasetIOService;
 import net.imagej.Dataset;
 import net.imagej.DefaultDataset;
@@ -23,6 +25,7 @@ import net.imagej.axis.Axes;
 import net.imagej.axis.CalibratedAxis;
 import net.imagej.display.DatasetView;
 import net.imagej.display.ImageDisplay;
+import net.imagej.legacy.LegacyService;
 import net.imagej.ops.OpEnvironment;
 import net.imagej.ops.special.computer.Computers;
 import net.imagej.ops.special.function.AbstractUnaryFunctionOp;
@@ -255,7 +258,7 @@ public class LocalZProjectionOp< T extends RealType< T > & NativeType< T > > ext
 					extractSurfaceParams );
 			
 			if ( showOutputDuringCalculation )
-				lop.getListeners().add( ( z ) -> projectionDisplay.update() );
+				lop.getListeners().add( ( z ) -> capture( projectionDisplay, z ) );
 				
 			projectorOp = lop;
 		}
@@ -369,6 +372,17 @@ public class LocalZProjectionOp< T extends RealType< T > & NativeType< T > > ext
 		}
 
 		return output;
+	}
+
+	private void capture( final ImageDisplay display, final long z )
+	{
+		display.update();
+		final LegacyService legacyService = ops().context().getService( LegacyService.class );
+		if ( null != legacyService )
+		{
+			final ImagePlus imp = legacyService.getImageMap().lookupImagePlus( display );
+			IJ.save( imp, String.format( "/Users/tinevez/Desktop/capture/img-%04d.png", z ) );
+		}
 	}
 
 	/**
