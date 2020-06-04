@@ -51,7 +51,6 @@ public class ExtractSurfaceOnePassOp< T extends RealType< T > & NativeType< T > 
 
 	private String cancelReason;
 
-
 	@Override
 	public void compute( final ImgPlus< T > source, final RandomAccessibleInterval< UnsignedShortType > referenceSurface, final RandomAccessibleInterval< T > output )
 	{
@@ -117,8 +116,10 @@ public class ExtractSurfaceOnePassOp< T extends RealType< T > & NativeType< T > 
 		}
 
 		final Pair< UnsignedShortType, UnsignedShortType > minMax = ops.stats().minMax( Views.iterable( referenceSurface ) );
-		final long minZ = Math.max( channel.min( 2 ), minMax.getA().getIntegerLong() );
-		final long maxZ = Math.min( channel.max( 2 ), minMax.getB().getIntegerLong() );
+		final long minBound = minMax.getA().getIntegerLong() + offset - deltaZ;
+		final long maxBound = minMax.getB().getIntegerLong() + offset + deltaZ;
+		final long minZ = Math.max( channel.min( 2 ), minBound );
+		final long maxZ = Math.min( channel.max( 2 ), maxBound );
 
 		final RandomAccess< UnsignedShortType > raReference = referenceSurface.randomAccess( referenceSurface ); // 2D
 		for ( long z = minZ; z <= maxZ; z++ )
@@ -137,7 +138,6 @@ public class ExtractSurfaceOnePassOp< T extends RealType< T > & NativeType< T > 
 					accumulator.accumulate( cursor.get(), cursor );
 			}
 		}
-
 	}
 
 	/**
