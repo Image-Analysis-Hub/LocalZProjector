@@ -13,6 +13,7 @@ import org.scijava.plugin.Plugin;
 import org.scijava.util.VersionUtils;
 
 import fr.pasteur.iah.localzprojector.process.ExtractSurfaceParameters.ProjectionMethod;
+import fr.pasteur.iah.localzprojector.util.ImgPlusUtil;
 import io.scif.services.DatasetIOService;
 import net.imagej.Dataset;
 import net.imagej.DefaultDataset;
@@ -29,7 +30,6 @@ import net.imagej.ops.special.function.Functions;
 import net.imglib2.FinalDimensions;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.img.Img;
-import net.imglib2.img.ImgFactory;
 import net.imglib2.img.ImgView;
 import net.imglib2.type.NativeType;
 import net.imglib2.type.numeric.RealType;
@@ -42,57 +42,45 @@ import net.imglib2.view.Views;
 public class LocalZProjectionOp< T extends RealType< T > & NativeType< T > > extends AbstractUnaryFunctionOp< Dataset, Dataset > implements Cancelable
 {
 
-	@Parameter( type = ItemIO.INPUT )
-	private ReferenceSurfaceParameters referenceSurfaceParams;
-
-	@Parameter( type = ItemIO.INPUT )
-	private ExtractSurfaceParameters extractSurfaceParams;
-
-	@Parameter( type = ItemIO.INPUT, required = false )
-	private boolean showReferenceSurface = false;
-
-	@Parameter( type = ItemIO.INPUT, required = false )
-	private boolean showOutputDuringCalculation = false;
-
-	@Parameter( type = ItemIO.INPUT, required = false )
-	private boolean saveAtEachTimePoint = false;
-
-	@Parameter( type = ItemIO.INPUT, required = false )
-	private String saveFolder = System.getProperty( "user.home" );
-
 	/**
-	 * Specifies whether the source image is opened as a virtual stack.
-	 * <p>
-	 * For large movies it is a good idea to copy a full 3D+C stack on a new
-	 * Img. Why? Because when movies are very big they will be opened as a
-	 * virtual stack in ImageJ. Virtual stacks are cool, but a disk access
-	 * happens every-time we change the Z position. And when we do the extract
-	 * of the surface, we iterate along Z for each XY position. This copy here
-	 * works like a simple cache for 3D.
-	 * <p>
-	 * But it takes time, which might slow down process when we have only one
-	 * time-point, but a large 3D image that fits into memory. So we let the
-	 * user specifies whether the source movie is virtual (do a copy) or not (no
-	 * copy needed, the default).
+	 * If true, the projection will be updated live as it incorporates pixels
+	 * from various Zs. This slows down a bit the projection.
 	 */
+	private static final boolean SHOW_LIVE_Z_UPDATE = false;
+
+	@Parameter( type = ItemIO.INPUT )
+	protected ReferenceSurfaceParameters referenceSurfaceParams;
+
+	@Parameter( type = ItemIO.INPUT )
+	protected ExtractSurfaceParameters extractSurfaceParams;
+
 	@Parameter( type = ItemIO.INPUT, required = false )
-	private boolean isVirtual = false;
+	protected boolean showReferenceSurface = false;
+
+	@Parameter( type = ItemIO.INPUT, required = false )
+	protected boolean showOutputDuringCalculation = false;
+
+	@Parameter( type = ItemIO.INPUT, required = false )
+	protected boolean saveAtEachTimePoint = false;
+
+	@Parameter( type = ItemIO.INPUT, required = false )
+	protected String saveFolder = System.getProperty( "user.home" );
 
 	@Parameter
-	private DisplayService displayService;
+	protected DisplayService displayService;
 
 	@Parameter
-	private StatusService status;
+	protected StatusService status;
 
 	@Parameter
-	private DatasetIOService ioService;
+	protected DatasetIOService ioService;
 
 	@Parameter
 	private AutoscaleService autoscaleService;
 
-	private String cancelReason;
+	protected String cancelReason;
 
-	private Cancelable cancelable;
+	protected Cancelable cancelable;
 
 	/**
 	 * Stores the reference surface.
@@ -265,12 +253,17 @@ public class LocalZProjectionOp< T extends RealType< T > & NativeType< T > > ext
 		else
 		{
 			@SuppressWarnings( "rawtypes" )
-			final ExtractSurfaceOp< T > lop = ( ExtractSurfaceOp ) Computers.binary( ops(),
-					ExtractSurfaceOp.class,
+			final ExtractSurfaceOnePassOp< T > lop = ( ExtractSurfaceOnePassOp ) Computers.binary( ops(),
+					ExtractSurfaceOnePassOp.class,
 					RandomAccessibleInterval.class,
 					ImgPlus.class,
 					RandomAccessibleInterval.class,
 					extractSurfaceParams );
+			
+			if ( showOutputDuringCalculation )
+				if ( SHOW_LIVE_Z_UPDATE )
+					lop.getListeners().add( ( z ) -> projectionDisplay.update() );
+				
 			projectorOp = lop;
 		}
 
@@ -279,7 +272,7 @@ public class LocalZProjectionOp< T extends RealType< T > & NativeType< T > > ext
 		{
 
 			status.showStatus( "Processing time-point " + t );
-			final ImgPlus< T > tp = getSourceTimePoint( ( ImgPlus< T > ) input.getImgPlus(), t, ops(), isVirtual );
+			final ImgPlus< T > tp = getSourceTimePoint( ( ImgPlus< T > ) input.getImgPlus(), t, ops() );
 
 			/*
 			 * Get reference surface.
@@ -289,7 +282,7 @@ public class LocalZProjectionOp< T extends RealType< T > & NativeType< T > > ext
 				return output;
 			cancelable = referenceSurfaceOp;
 
-			final RandomAccessibleInterval< T > channel = getChannel( tp, referenceSurfaceParams.targetChannel );
+			final ImgPlus< T > channel = ImgPlusUtil.hypersliceChannel( tp, referenceSurfaceParams.targetChannel );
 			final Img< UnsignedShortType > referenceSurface = referenceSurfaceOp.calculate( channel );
 			copyOnReferenceSurfaceOutput( referenceSurface, ( ImgPlus< UnsignedShortType > ) referenceSurfaces.getImgPlus(), t );
 
@@ -313,7 +306,7 @@ public class LocalZProjectionOp< T extends RealType< T > & NativeType< T > > ext
 				return output;
 			cancelable = projectorOp;
 
-			final RandomAccessibleInterval< T > outputSlice = getOutputTimePoint( outImgPlus, t );
+			final ImgPlus< T > outputSlice = ImgPlusUtil.hypersliceTimePoint( outImgPlus, t );
 			projectorOp.compute( tp, referenceSurface, outputSlice );
 
 			if ( showOutputDuringCalculation )
@@ -363,17 +356,8 @@ public class LocalZProjectionOp< T extends RealType< T > & NativeType< T > > ext
 				}
 
 				final String outputTpName = String.format( "%s_LocalProjection_%0" + ndigits + "d", inputName, t );
-				final CalibratedAxis[] outputTpAxes = new CalibratedAxis[ outputSlice.numDimensions() ];
-				// Remove T
-				int id3 = 0;
-				for ( int d = 0; d < outImgPlus.numDimensions(); d++ )
-				{
-					if ( d == outImgPlus.dimensionIndex( Axes.TIME ) )
-						continue;
-					outputTpAxes[ id3++ ] = outImgPlus.axis( d );
-				}
-
-				final ImgPlus< T > imgPlusOutputSingleTP = new ImgPlus< T >( wrapToImgPlus( outputSlice ), outputTpName, outputTpAxes );
+				final CalibratedAxis[] outputTpAxes = ImgPlusUtil.hypersliceAxes( outImgPlus, Axes.TIME );
+				final ImgPlus< T > imgPlusOutputSingleTP = new ImgPlus< T >( ImgPlusUtil.wrapToImgPlus( outputSlice ), outputTpName, outputTpAxes );
 				final Dataset outputTpDataset = new DefaultDataset( ioService.context(), imgPlusOutputSingleTP );
 
 				final Path destination = Paths.get( saveFolder, outputTpName + ".tif" );
@@ -388,7 +372,7 @@ public class LocalZProjectionOp< T extends RealType< T > & NativeType< T > > ext
 
 			}
 
-			status.showProgress( ( int ) t, ( int ) nFrames );
+			status.showProgress( ( int ) t + 1, ( int ) nFrames );
 		}
 
 		return output;
@@ -419,56 +403,14 @@ public class LocalZProjectionOp< T extends RealType< T > & NativeType< T > > ext
 		}
 	}
 
-	private RandomAccessibleInterval< T > getChannel( final ImgPlus< T > img, final long c )
-	{
-		final int channelAxis = img.dimensionIndex( Axes.CHANNEL );
-		final RandomAccessibleInterval< T > rai;
-		if ( channelAxis >= 0 )
-			rai = Views.hyperSlice( img, channelAxis, c );
-		else
-			rai = img;
-		return rai;
-	}
-
-	private RandomAccessibleInterval< T > getOutputTimePoint( final ImgPlus< T > output, final long t )
-	{
-		final int timeAxis = output.dimensionIndex( Axes.TIME );
-		if ( timeAxis < 0 )
-			return output;
-
-		return Views.hyperSlice( output, timeAxis, t );
-	}
-
-	public static final < T extends RealType< T > & NativeType< T > > ImgPlus< T > getSourceTimePoint( final ImgPlus< T > img, final long t, final OpEnvironment ops, final boolean isVirtual )
+	public static final < T extends RealType< T > & NativeType< T > > ImgPlus< T > getSourceTimePoint( final ImgPlus< T > img, final long t, final OpEnvironment ops )
 	{
 		final int timeAxis = img.dimensionIndex( Axes.TIME );
 		if ( timeAxis < 0 )
 			return img;
 
 		final IntervalView< T > tp = Views.hyperSlice( img, timeAxis, t );
-		final Img< T > copy;
-		if ( isVirtual )
-		{
-			/*
-			 * For large images it is a good idea to copy a full 3D+C stack on a
-			 * new Img.
-			 *
-			 * Why? Because when images are very big they will be opened as a
-			 * virtual stack in ImageJ. Virtual stacks are cool, but a disk
-			 * access happens every-time we change the Z position. And when we
-			 * do the extract of the surface, we iterate along Z for each XY
-			 * position. This copy here works like a simple cache for 3D.
-			 */
-			copy = ops.create().img( tp, img.firstElement() );
-			ops.copy().rai( copy, tp );
-		}
-		else
-		{
-			/*
-			 * The line below is a method that does not do any duplication.
-			 */
-			copy = ImgView.wrap( tp, Util.getArrayOrCellImgFactory( tp, img.firstElement() ) );
-		}
+		final Img< T > copy = ImgView.wrap( tp, Util.getArrayOrCellImgFactory( tp, img.firstElement() ) );
 
 		// Put back axes.
 		final CalibratedAxis[] axes = new CalibratedAxis[ img.numDimensions() - 1 ];
@@ -481,29 +423,6 @@ public class LocalZProjectionOp< T extends RealType< T > & NativeType< T > > ext
 		}
 		final ImgPlus< T > imgPlus = new ImgPlus<>( copy, "Time-point " + t + "  of " + img.getName(), axes );
 		return imgPlus;
-	}
-
-	private ImgPlus< T > wrapToImgPlus(
-			final RandomAccessibleInterval< T > rai )
-	{
-		if ( rai instanceof ImgPlus )
-			return ( ImgPlus< T > ) rai;
-		return new ImgPlus<>( wrapToImg( rai ) );
-	}
-
-	private Img< T > wrapToImg(
-			final RandomAccessibleInterval< T > rai )
-	{
-		if ( rai instanceof Img )
-			return ( Img< T > ) rai;
-		return ImgView.wrap( rai, imgFactory( rai ) );
-	}
-
-	private ImgFactory< T > imgFactory(
-			final RandomAccessibleInterval< T > rai )
-	{
-		final T type = Util.getTypeFromInterval( rai );
-		return Util.getSuitableImgFactory( rai, type );
 	}
 
 	@Override
