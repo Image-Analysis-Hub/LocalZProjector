@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.scijava</groupId>
 		<artifactId>pom-scijava</artifactId>
-		<version>29.0.0-beta-1</version>
+		<version>29.2.1</version>
 		<relativePath />
 	</parent>
 
@@ -13,7 +13,7 @@
 	<version>1.3.2-SNAPSHOT</version>
 	<name>plugins/LocalZProjector_.jar</name>
 	<description>A Fiji tool to perform local Z projection.</description>
-	<url>http://imagej.net/Welcome</url>
+	<url>https://gitlab.pasteur.fr/iah-public/localzprojector</url>
 	<inceptionYear>2019</inceptionYear>
 	<organization>
 		<name>IAH / C2RT / Institut Pasteur</name>
@@ -29,8 +29,6 @@
 
 	<properties>
 		<package-name>fr.pasteur.iah.localzprojector</package-name>
-		<!-- Target Fiji dir for clean upload. -->
-		<imagej.app.directory>../Fiji.app/</imagej.app.directory>
 		<license.licenseName>bsd_v3</license.licenseName>
 		<license.copyrightOwners>IAH developers.</license.copyrightOwners>
 		<license.projectName>Image Analysis Hub support for Life Scientists.</license.projectName>
@@ -76,7 +74,6 @@
 		<dependency>
 			<groupId>org.scijava</groupId>
 			<artifactId>scijava-listeners</artifactId>
-			<version>1.0.0-beta-2</version>
 		</dependency>
 		
 		<!-- BDV dependencies -->
