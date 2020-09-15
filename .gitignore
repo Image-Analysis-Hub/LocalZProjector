@@ -11,3 +11,6 @@ buildNumber.properties
 .classpath
 .project
 .settings
+builds/
+cache/
+docs
