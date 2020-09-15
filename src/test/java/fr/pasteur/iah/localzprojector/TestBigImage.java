@@ -35,15 +35,16 @@ public class TestBigImage
 		imp.show();
 
 		final int channel = 0;
+		final int binning = 16;
 		final ReferenceSurfaceParameters referenceSurfaceParams = ReferenceSurfaceParameters.create()
 				.method( Method.MAX_OF_MEAN )
 				.zMin( 0 )
 				.zMax( 100000 )
 				.filterWindowSize( 40 )
-				.binning( 4 )
-				.gaussianPreFilter( 0.5 )
+				.binning( binning )
+				.gaussianPreFilter( 0. )
 				.targetChannel( channel )
-				.medianPostFilterHalfSize( 100 / 4 )
+				.medianPostFilterHalfSize( 100 / binning )
 				.get();
 		final ExtractSurfaceParameters extractSurfaceParameters = ExtractSurfaceParameters.create()
 				.zOffset( 0, 0 )
