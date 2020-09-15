@@ -42,6 +42,12 @@ import net.imglib2.view.Views;
 public class LocalZProjectionOp< T extends RealType< T > & NativeType< T > > extends AbstractUnaryFunctionOp< Dataset, Dataset > implements Cancelable
 {
 
+	/**
+	 * If true, the projection will be updated live as it incorporates pixels
+	 * from various Zs. This slows down a bit the projection.
+	 */
+	private static final boolean SHOW_LIVE_Z_UPDATE = false;
+
 	@Parameter( type = ItemIO.INPUT )
 	protected ReferenceSurfaceParameters referenceSurfaceParams;
 
@@ -255,7 +261,8 @@ public class LocalZProjectionOp< T extends RealType< T > & NativeType< T > > ext
 					extractSurfaceParams );
 			
 			if ( showOutputDuringCalculation )
-				lop.getListeners().add( ( z ) -> projectionDisplay.update() );
+				if ( SHOW_LIVE_Z_UPDATE )
+					lop.getListeners().add( ( z ) -> projectionDisplay.update() );
 				
 			projectorOp = lop;
 		}
