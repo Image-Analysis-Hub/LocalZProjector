@@ -4,6 +4,7 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import javax.swing.BoxLayout;
+import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -15,12 +16,21 @@ import org.scijava.util.VersionUtils;
 
 import fr.pasteur.iah.localzprojector.process.ExtractSurfaceParameters;
 import fr.pasteur.iah.localzprojector.process.ReferenceSurfaceParameters;
+import fr.pasteur.iah.localzprojector.util.GuiUtil;
 import net.imagej.Dataset;
 
 public class GuiPanel extends JPanel
 {
 
 	private static final long serialVersionUID = 1L;
+
+	private static final ImageIcon ICON;
+
+	static
+	{
+		final ImageIcon imageIcon = new ImageIcon( ReferenceSurfacePanel.class.getResource( "LocalZProjectorLogo-512.png" ) );
+		ICON = GuiUtil.scaleImage( imageIcon, 128, 128 );
+	}
 
 	private final PrefService prefService;
 
@@ -36,7 +46,7 @@ public class GuiPanel extends JPanel
 
 	private Dataset dataset;
 
-	private JPanel middlePanel;
+	private final JPanel middlePanel;
 
 
 	/**
@@ -74,7 +84,10 @@ public class GuiPanel extends JPanel
 		 * Title.
 		 */
 
-		final JLabel lblTitle = new JLabel( "<html>\n<center>\n<big>Local Z Projector.</big>\n<p>\nv" + VersionUtils.getVersion( GuiPanel.class ) + "\n</center>\n</html>" );
+		final JLabel lblTitle = new JLabel(
+				"<html>\n<center>\n<big>Local Z Projector.</big>\n<p>\nv" + VersionUtils.getVersion( GuiPanel.class ) + "\n</center>\n</html>",
+				ICON,
+				JLabel.CENTER );
 		lblTitle.setHorizontalAlignment( SwingConstants.CENTER );
 		lblTitle.setAlignmentX( 0.5f );
 		add( lblTitle );
