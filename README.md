@@ -4,6 +4,12 @@
 
 Local Z Projector is an ImageJ2 plugin to perform local-Z projection of a 3D stack, possibly over time, possibly very large.
 
+## Installation.
+
+LocalZProjector is a [Fiji](https://fiji.sc/) plugin and can be installed directly within the [Fiji updater](https://imagej.net/ImageJ_Updater).
+
+In the `Manage update sites` window, check the `Local Z Projector` plugin. Click the `Close` button, then the `Apply changes` button. After the plugin is downloaded, restart Fiji. The plugin can then be launched from the _Plugins > Process > Local Z Projector_ menu item.
+
 ## Aims.
 
 LZP performs projection of a surface of interest on a 2D plane from a 3D image. It is a simple tool that focuses on **usability** and is designed to be **adaptable** to many different use cases and image quality. 
@@ -167,4 +173,3 @@ There are several other tools to generate this kind of projections:
 - Extended Depth of Field, an ImageJ plugin: http://bigwww.epfl.ch/demo/edf/
 - Min. Cost Z Surface, an ImageJ plugin: https://imagej.net/Minimum_Cost_Z_surface_Projection
 - FastSME and SME, MATLAB software for the extraction of smooth-manifold structures: https://openaccess.thecvf.com/content_cvpr_2018_workshops/w44/html/Basu_FastSME_Faster_and_CVPR_2018_paper.html
-- 
