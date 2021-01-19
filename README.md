@@ -26,6 +26,25 @@ The height-map is then used to extract a projection from the 3D image. A fixed o
 
 ![ProjectionPrinciple](docs/ProjectionPrinciple.png)
 
+## Example datasets.
+
+Here are two examples available on Zenodo and that can be used to test the LocalZProjector plugin. 
+Both are of images of Drosophila pupa notum, captured on a confocal microscope by Léo Valon.
+
+## Dataset 1.
+
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4449952.svg)](https://doi.org/10.5281/zenodo.4449952)
+
+This dataset  also contains the parameters to generate the reference surface and local projection, also included. The two `*.localzprojector` files can be loaded directly in the plugin to load adequate parameters.
+This is a __downsampled__ version of the dataset used to generate the figures 1, 2 and 3 in this paper, as well as the comparison in table 1. Because we downsampled it, the parameters and final image quality won't be identical that of the paper.
+
+## Dataset 2.
+
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4449999.svg)](https://doi.org/10.5281/zenodo.4449999)
+
+A much larger image, also of Drosophila pupa notum. Example parameters are also included.
+
+
 ## Example.
 
 Input: a 3D stack, 2 channels, with an epithelium that resembles a smooth manifold in the green channel. The same channel is corrupted by dead cells for large values of Z, and by an auto-fluorescent cuticle for lower Z. The red channel contains cells, some of which are expressing a fluorescent reporter. It stains their nuclei, just below the epithelium.
