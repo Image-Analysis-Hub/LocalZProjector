@@ -58,7 +58,7 @@ public class ExtractSurfacePanel extends JPanel
 		@Override
 		public String getDescription()
 		{
-			return "Extract-Surface parameters";
+			return "Local-Projection parameters";
 		}
 
 	};
@@ -74,7 +74,7 @@ public class ExtractSurfacePanel extends JPanel
 		c.gridx = 0;
 		c.gridy = 0;
 
-		final JLabel lblLocalProjection = new JLabel( "Extract projection." );
+		final JLabel lblLocalProjection = new JLabel( "Local-Projection." );
 		lblLocalProjection.setHorizontalAlignment( JLabel.CENTER );
 		lblLocalProjection.setFont( lblLocalProjection.getFont().deriveFont( lblLocalProjection.getFont().getSize() + 2f ) );
 		add( lblLocalProjection, c );

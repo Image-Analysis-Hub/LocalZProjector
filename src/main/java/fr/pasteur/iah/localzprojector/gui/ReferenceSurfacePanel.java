@@ -66,7 +66,7 @@ public class ReferenceSurfacePanel extends JPanel
 		@Override
 		public String getDescription()
 		{
-			return "Reference-Surface parameters";
+			return "Height-Map parameters";
 		}
 
 	};
@@ -111,7 +111,7 @@ public class ReferenceSurfacePanel extends JPanel
 		final int medianSize = Math.max( 1, Math.min( 1000, prefs.getInt( ReferenceSurfaceParameters.class, MEDIAN_SIZE_PREF_NAME, 41 ) ) );
 		final int binning = Math.max( 1, Math.min( 100, prefs.getInt( ReferenceSurfaceParameters.class, BINNING_PREF_NAME, 1 ) ) );
 
-		final JLabel lblReferenceSurface = new JLabel( "Reference surface." );
+		final JLabel lblReferenceSurface = new JLabel( "Height-Map." );
 		lblReferenceSurface.setHorizontalAlignment( JLabel.CENTER );
 		lblReferenceSurface.setFont( lblReferenceSurface.getFont().deriveFont( lblReferenceSurface.getFont().getSize() + 2f ) );
 		add( lblReferenceSurface, c );
