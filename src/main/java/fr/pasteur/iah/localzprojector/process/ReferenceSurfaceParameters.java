@@ -1,18 +1,19 @@
 package fr.pasteur.iah.localzprojector.process;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.Serializable;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.stream.Collectors;
 
-public class ReferenceSurfaceParameters implements Serializable
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
+public class ReferenceSurfaceParameters
 {
-
-	private static final long serialVersionUID = -7529278459519251051L;
 
 	public final Method method;
 
@@ -186,20 +187,28 @@ public class ReferenceSurfaceParameters implements Serializable
 
 	public static void serialize( final ReferenceSurfaceParameters parameters, final File file ) throws FileNotFoundException, IOException
 	{
-		try (FileOutputStream stream = new FileOutputStream( file );
-				ObjectOutputStream out = new ObjectOutputStream( stream ))
+		final Gson gson = new GsonBuilder().setPrettyPrinting().create();
+		final String str = gson.toJson( parameters );
+
+		try (FileWriter writer = new FileWriter( file ))
 		{
-			out.writeObject( parameters );
+			writer.append( str );
 		}
 	}
 
 	public static ReferenceSurfaceParameters deserialize( final File file ) throws FileNotFoundException, IOException, ClassNotFoundException
 	{
-		try (FileInputStream stream = new FileInputStream( file );
-				ObjectInputStream in = new ObjectInputStream( stream ))
+		try (FileReader reader = new FileReader( file ))
 		{
-			final Object readObject = in.readObject();
-			return ( ReferenceSurfaceParameters ) readObject;
+			final String str = Files.lines( Paths.get( file.getAbsolutePath() ) )
+					.collect( Collectors.joining( System.lineSeparator() ) );
+
+			final Gson gson = new GsonBuilder().setPrettyPrinting().create();
+			final ReferenceSurfaceParameters params = ( str == null || str.isEmpty() )
+					? df
+					: gson.fromJson( str, ReferenceSurfaceParameters.class );
+
+			return params;
 		}
 	}
 }

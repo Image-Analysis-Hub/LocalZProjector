@@ -46,7 +46,7 @@ public class ExtractSurfacePanel extends JPanel
 
 	private final List< ExtractSurfaceChannelPanel > channels;
 
-	private final static String suffix = ".extractsurface.localzprojector";
+	private final static String suffix = ".localproj.lzp.json";
 	
 	private final static FileFilter filter = new FileFilter()
 	{

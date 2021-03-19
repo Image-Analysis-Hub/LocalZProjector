@@ -54,7 +54,7 @@ public class ReferenceSurfacePanel extends JPanel
 	private final static String MEDIAN_SIZE_PREF_NAME = "medianSize";
 	private final static String BINNING_PREF_NAME = "binning";
 
-	private final static String suffix = ".referencesurface.localzprojector";
+	private final static String suffix = ".heightmap.lzp.json";
 
 	private final static FileFilter filter = new FileFilter()
 	{

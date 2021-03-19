@@ -1,20 +1,21 @@
 package fr.pasteur.iah.localzprojector.process;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.Serializable;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
-public class ExtractSurfaceParameters implements Serializable
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
+public class ExtractSurfaceParameters
 {
-
-	private static final long serialVersionUID = -63871622455310296L;
 
 	/**
 	 * Method to use to generate a single pixel value from the z-neighborhood
@@ -247,20 +248,28 @@ public class ExtractSurfaceParameters implements Serializable
 
 	public static void serialize( final ExtractSurfaceParameters parameters, final File file ) throws FileNotFoundException, IOException
 	{
-		try (FileOutputStream stream = new FileOutputStream( file );
-				ObjectOutputStream out = new ObjectOutputStream( stream ))
+		final Gson gson = new GsonBuilder().setPrettyPrinting().create();
+		final String str = gson.toJson( parameters );
+
+		try (FileWriter writer = new FileWriter( file ))
 		{
-			out.writeObject( parameters );
+			writer.append( str );
 		}
 	}
 
 	public static ExtractSurfaceParameters deserialize( final File file ) throws FileNotFoundException, IOException, ClassNotFoundException
 	{
-		try (FileInputStream stream = new FileInputStream( file );
-				ObjectInputStream in = new ObjectInputStream( stream ))
+		try (FileReader reader = new FileReader( file ))
 		{
-			final Object readObject = in.readObject();
-			return ( ExtractSurfaceParameters ) readObject;
+			final String str = Files.lines( Paths.get( file.getAbsolutePath() ) )
+					.collect( Collectors.joining( System.lineSeparator() ) );
+
+			final Gson gson = new GsonBuilder().setPrettyPrinting().create();
+			final ExtractSurfaceParameters params = ( str == null || str.isEmpty() )
+					? df
+					: gson.fromJson( str, ExtractSurfaceParameters.class );
+
+			return params;
 		}
 	}
 }
