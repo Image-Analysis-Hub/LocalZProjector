@@ -38,6 +38,8 @@ public class ExtractSurfacePanel extends JPanel
 
 	private static final long serialVersionUID = 1L;
 
+	private final static ImageIcon DEFAULT_PARAM_ICON = new ImageIcon( ReferenceSurfacePanel.class.getResource( "page.png" ) );
+
 	private final static ImageIcon LOAD_ICON = new ImageIcon( ReferenceSurfacePanel.class.getResource( "page_go.png" ) );
 
 	private final static ImageIcon SAVE_ICON = new ImageIcon( ReferenceSurfacePanel.class.getResource( "page_save.png" ) );
@@ -110,11 +112,15 @@ public class ExtractSurfacePanel extends JPanel
 		add( panelButtons, c );
 		panelButtons.setLayout( new BoxLayout( panelButtons, BoxLayout.X_AXIS ) );
 
-		final JButton btnLoadParams = new JButton( "load params", LOAD_ICON );
+		final JButton btnDefaultParams = new JButton( "default", DEFAULT_PARAM_ICON );
+		btnDefaultParams.setFont( btnDefaultParams.getFont().deriveFont( btnDefaultParams.getFont().getSize() - 2f ) );
+		final JButton btnLoadParams = new JButton( "load", LOAD_ICON );
 		btnLoadParams.setFont( btnLoadParams.getFont().deriveFont( btnLoadParams.getFont().getSize() - 2f ) );
-		final JButton btnSaveParams = new JButton( "save params", SAVE_ICON );
+		final JButton btnSaveParams = new JButton( "save", SAVE_ICON );
 		btnSaveParams.setFont( btnSaveParams.getFont().deriveFont( btnSaveParams.getFont().getSize() - 2f ) );
 
+		panelButtons.add( btnDefaultParams );
+		panelButtons.add( Box.createHorizontalGlue() );
 		panelButtons.add( btnLoadParams );
 		panelButtons.add( Box.createHorizontalGlue() );
 		panelButtons.add( btnSaveParams );
@@ -129,9 +135,15 @@ public class ExtractSurfacePanel extends JPanel
 		/*
 		 * Listeners.
 		 */
-
+		
+		btnDefaultParams.addActionListener( l -> defaultParameters() );
 		btnLoadParams.addActionListener( l -> loadParameters() );
 		btnSaveParams.addActionListener( l -> saveParameters() );
+	}
+
+	private void defaultParameters()
+	{
+		setParameters( ExtractSurfaceParameters.df );
 	}
 
 	private void saveParameters()

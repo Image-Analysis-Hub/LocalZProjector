@@ -69,6 +69,18 @@ public class ReferenceSurfaceParameters implements Serializable
 		return new Builder();
 	}
 
+	public static final ReferenceSurfaceParameters df;
+	static 
+	{
+		df = ReferenceSurfaceParameters.create()
+				.binning( 6 )
+				.filterWindowSize( 6 )
+				.gaussianPreFilter( 0.7 )
+				.medianPostFilterHalfSize( 4 )
+				.method( Method.MAX_OF_STD )
+				.get();
+	}
+
 	public static class Builder
 	{
 

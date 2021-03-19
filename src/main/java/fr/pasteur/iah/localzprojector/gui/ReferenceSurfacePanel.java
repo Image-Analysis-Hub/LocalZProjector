@@ -40,6 +40,8 @@ public class ReferenceSurfacePanel extends JPanel
 
 	private static final long serialVersionUID = 1L;
 
+	private final static ImageIcon DEFAULT_PARAM_ICON = new ImageIcon( ReferenceSurfacePanel.class.getResource( "page.png" ) );
+
 	private final static ImageIcon LOAD_ICON = new ImageIcon( ReferenceSurfacePanel.class.getResource( "page_go.png" ) );
 
 	private final static ImageIcon SAVE_ICON = new ImageIcon( ReferenceSurfacePanel.class.getResource( "page_save.png" ) );
@@ -200,11 +202,15 @@ public class ReferenceSurfacePanel extends JPanel
 		add( panelButtons, c );
 		panelButtons.setLayout( new BoxLayout( panelButtons, BoxLayout.X_AXIS ) );
 
-		final JButton btnLoadParams = new JButton( "load params", LOAD_ICON );
+		final JButton btnDefaultParams = new JButton( "default", DEFAULT_PARAM_ICON );
+		btnDefaultParams.setFont( btnDefaultParams.getFont().deriveFont( btnDefaultParams.getFont().getSize() - 2f ) );
+		final JButton btnLoadParams = new JButton( "load", LOAD_ICON );
 		btnLoadParams.setFont( btnLoadParams.getFont().deriveFont( btnLoadParams.getFont().getSize() - 2f ) );
-		final JButton btnSaveParams = new JButton( "save params", SAVE_ICON );
+		final JButton btnSaveParams = new JButton( "save", SAVE_ICON );
 		btnSaveParams.setFont( btnSaveParams.getFont().deriveFont( btnSaveParams.getFont().getSize() - 2f ) );
 
+		panelButtons.add( btnDefaultParams );
+		panelButtons.add( Box.createHorizontalGlue() );
 		panelButtons.add( btnLoadParams );
 		panelButtons.add( Box.createHorizontalGlue() );
 		panelButtons.add( btnSaveParams );
@@ -220,6 +226,7 @@ public class ReferenceSurfacePanel extends JPanel
 		 * Listeners.
 		 */
 
+		btnDefaultParams.addActionListener( l -> defaultParameters() );
 		btnLoadParams.addActionListener( l -> loadParameters() );
 		btnSaveParams.addActionListener( l -> saveParameters() );
 
@@ -260,10 +267,18 @@ public class ReferenceSurfacePanel extends JPanel
 		spinnerModelBinning.setValue( Integer.valueOf( params.binning ) );
 		comboBoxMethod.setSelectedItem( params.method );
 		spinnerModelSize.setValue( Integer.valueOf( params.filterWindowSize ) );
-		spinnerModelZMin.setValue( Integer.valueOf( params.zMin ) );
-		spinnerModelZMax.setValue( Integer.valueOf( params.zMax ) );
 		ftfSigma.setValue( Double.valueOf( params.sigma ) );
 		spinnerModelMedian.setValue( Integer.valueOf( 2 * params.medianHalfSize + 1 ) );
+
+		if ( params.zMin < 0 )
+			spinnerModelZMin.setValue( Integer.valueOf( 0 ) );
+		else
+			spinnerModelZMin.setValue( Integer.valueOf( params.zMin ) );
+
+		if ( params.zMax < 0 )
+			spinnerModelZMax.setValue( spinnerModelZMax.getMaximum() );
+		else
+			spinnerModelZMax.setValue( Integer.valueOf( params.zMax ) );
 	}
 
 	private void saveParameters()
@@ -287,6 +302,11 @@ public class ReferenceSurfacePanel extends JPanel
 			System.err.println( "Cannot write to " + file + ":\n" + e.getMessage() );
 			e.printStackTrace();
 		}
+	}
+
+	private void defaultParameters()
+	{
+		setParameters( ReferenceSurfaceParameters.df );
 	}
 
 	private void loadParameters()

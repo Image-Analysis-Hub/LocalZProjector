@@ -121,6 +121,43 @@ public class ExtractSurfaceParameters implements Serializable
 			return val;
 	}
 
+	public static final ExtractSurfaceParameters df;
+	static
+	{
+		df = ExtractSurfaceParameters.create()
+				.deltaZ( 0, 2 )
+				.deltaZ( 1, 2 )
+				.deltaZ( 2, 2 )
+				.deltaZ( 3, 2 )
+				.deltaZ( 4, 2 )
+				.deltaZ( 5, 2 )
+				.deltaZ( 6, 2 )
+				.deltaZ( 7, 2 )
+				.deltaZ( 8, 2 )
+				.deltaZ( 9, 2 )
+				.zOffset( 0, 0 )
+				.zOffset( 1, 0 )
+				.zOffset( 2, 0 )
+				.zOffset( 3, 0 )
+				.zOffset( 4, 0 )
+				.zOffset( 5, 0 )
+				.zOffset( 6, 0 )
+				.zOffset( 7, 0 )
+				.zOffset( 8, 0 )
+				.zOffset( 9, 0 )
+				.projectionMethod( 0, ProjectionMethod.MIP )
+				.projectionMethod( 1, ProjectionMethod.MIP )
+				.projectionMethod( 2, ProjectionMethod.MIP )
+				.projectionMethod( 3, ProjectionMethod.MIP )
+				.projectionMethod( 4, ProjectionMethod.MIP )
+				.projectionMethod( 5, ProjectionMethod.MIP )
+				.projectionMethod( 6, ProjectionMethod.MIP )
+				.projectionMethod( 7, ProjectionMethod.MIP )
+				.projectionMethod( 8, ProjectionMethod.MIP )
+				.projectionMethod( 9, ProjectionMethod.MIP )
+				.get();
+	}
+
 	public static class Builder
 	{
 
