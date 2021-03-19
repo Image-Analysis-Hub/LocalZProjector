@@ -2,7 +2,6 @@ package fr.pasteur.iah.localzprojector.gui;
 
 import java.io.File;
 import java.util.List;
-import java.util.function.Supplier;
 
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -58,10 +57,8 @@ public class GuiController
 		this.logService = context.getService( LogService.class );
 
 		final ImageDisplayService imageDisplayService = context.getService( ImageDisplayService.class );
-		final Supplier< Dataset > datasetSupplier = () -> imageDisplayService.getActiveDataset();
-
 		this.guiPanel = new GuiPanel(
-				datasetSupplier,
+				imageDisplayService.getActiveDataset(),
 				() -> previewReferencePlane(),
 				( b ) -> previewLocalProjection( b ),
 				() -> runLocalProjection(),

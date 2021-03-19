@@ -1,7 +1,6 @@
 package fr.pasteur.iah.localzprojector.gui;
 
 import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
@@ -69,7 +68,7 @@ public class GuiPanel extends JPanel
 	 *            used to grant persistence of settings on the GUI.
 	 */
 	public GuiPanel(
-			final Supplier< Dataset > datasetSupplier,
+			final Dataset dataset,
 			final Runnable previewReferencePlaneRunner,
 			final Consumer< Boolean > previewLocalProjectionRunner,
 			final Runnable localProjectionRunner,
@@ -104,7 +103,6 @@ public class GuiPanel extends JPanel
 
 		targetImagePanel = new TargetImagePanel();
 		add( targetImagePanel );
-		targetImagePanel.btnRefresh.addActionListener( l -> refreshDataset( datasetSupplier.get() ) );
 
 		/*
 		 * Separator.
@@ -133,7 +131,7 @@ public class GuiPanel extends JPanel
 		 * Check
 		 */
 
-		refreshDataset( datasetSupplier.get() );
+		refreshDataset( dataset );
 
 		/*
 		 * Wire listeners.

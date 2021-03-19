@@ -25,8 +25,6 @@ public class TargetImagePanel extends JPanel
 
 	private final JLabel labelNT;
 
-	final JButton btnRefresh;
-
 	public TargetImagePanel()
 	{
 		final GridBagLayout gridBagLayout = new GridBagLayout();
@@ -75,11 +73,6 @@ public class TargetImagePanel extends JPanel
 		c.anchor = GridBagConstraints.WEST;
 		this.labelNT = new JLabel();
 		add( labelNT, c );
-
-		c.gridx++;
-		c.anchor = GridBagConstraints.WEST;
-		this.btnRefresh = new JButton( "refresh" );
-		add( btnRefresh, c );
 
 		// Change font size - more compact.
 		final Font lblFont = getFont().deriveFont( getFont().getSize2D() - 2f );
