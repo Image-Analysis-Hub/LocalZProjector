@@ -48,8 +48,8 @@ public class ReferenceSurfaceParameters
 
 		MAX_OF_MEAN( "Max of mean" ),
 		MAX_OF_STD( "Max of std" ),
-		SPARSE_MAX_OF_MEAN( "Sparse max of mean" ),
-		SPARSE_MAX_OF_STD( "Sparse max of std" );
+		SPARSE_MAX_OF_MEAN( "Mean max on grid" ),
+		SPARSE_MAX_OF_STD( "Std max on grid" );
 
 		private final String str;
 
