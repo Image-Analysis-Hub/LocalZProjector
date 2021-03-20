@@ -44,6 +44,7 @@ public class TestBigImageBDV
 		final ViewerOptions options = ViewerOptions.options();
 		final BigDataViewer bdv = BigDataViewer.open( xmlFilename, "Large imges", progressWriter, options );
 		
+		@SuppressWarnings( "unchecked" )
 		final RandomAccessibleInterval< T > source = ( RandomAccessibleInterval< T > ) bdv.getViewer().state()
 				.getSources().get( 0 ).getSpimSource().getSource( 0, 0 );
 
