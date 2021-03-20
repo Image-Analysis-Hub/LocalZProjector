@@ -181,7 +181,7 @@ public class TargetImagePanel extends JPanel
 	{
 		if ( null == dataset )
 		{
-			labelImage.setText( "Please select an image and click the refresh button." );
+			labelImage.setText( "Please open an image before running Local-Z-Projector." );
 			labelNC.setText( "" );
 			labelNT.setText( "" );
 			labelNZ.setText( "" );
