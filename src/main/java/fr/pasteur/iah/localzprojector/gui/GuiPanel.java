@@ -83,8 +83,8 @@ public class GuiPanel extends JPanel
 	/**
 	 * Creates the GUI panel.
 	 *
-	 * @param datasetSupplier
-	 *            supplier that returns the currently selected {@link Dataset}.
+	 * @param dataset
+	 *            The dataset to operate on.
 	 * @param previewReferencePlaneRunner
 	 *            function to run when the 'Preview reference plane' button is
 	 *            pressed.
