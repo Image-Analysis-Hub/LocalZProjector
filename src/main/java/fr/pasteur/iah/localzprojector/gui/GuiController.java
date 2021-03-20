@@ -32,7 +32,9 @@
  */
 package fr.pasteur.iah.localzprojector.gui;
 
+import java.awt.Image;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.ImageIcon;
@@ -74,12 +76,16 @@ import net.imglib2.view.Views;
 public class GuiController
 {
 
-	private static final ImageIcon ICON;
+	private static final List< Image > ICONS;
 
 	static
 	{
+		ICONS = new ArrayList<>();
+		final int[] sizes = new int[] { 16, 32, 64, 128, 256 };
 		final ImageIcon imageIcon = new ImageIcon( ReferenceSurfacePanel.class.getResource( "LocalZProjectorLogo-512.png" ) );
-		ICON = GuiUtil.scaleImage( imageIcon, 32, 32 );
+		ICONS.add( imageIcon.getImage() );
+		for ( final int size : sizes )
+			ICONS.add( GuiUtil.scaleImage( imageIcon, size, size ).getImage() );
 	}
 
 	private final Context context;
@@ -109,7 +115,7 @@ public class GuiController
 
 		final JFrame frame = new JFrame();
 		frame.setTitle( "Local Z Projector" );
-		frame.setIconImage( ICON.getImage() );
+		frame.setIconImages( ICONS );
 		frame.setLocationByPlatform( true );
 		frame.setLocationRelativeTo( null );
 		frame.getContentPane().add( guiPanel );
