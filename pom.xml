@@ -10,7 +10,7 @@
 	</parent>
 
 	<artifactId>LocalZProjector</artifactId>
-	<version>1.5.4-SNAPSHOT</version>
+	<version>1.5.4</version>
 	<name>plugins/LocalZProjector_.jar</name>
 	<description>A Fiji tool to perform local Z projection.</description>
 	<url>https://gitlab.pasteur.fr/iah-public/localzprojector</url>
@@ -127,7 +127,7 @@
 	<scm>
 		<connection>scm:git:git://gitlab.pasteur.fr/iah/LocalZProjector</connection>
 		<developerConnection>scm:git:git@gitlab.pasteur.fr:iah/LocalZProjector</developerConnection>
-		<tag>HEAD</tag>
+		<tag>LocalZProjector-1.5.4</tag>
 		<url>https://gitlab.pasteur.fr/iah/LocalZProjector</url>
 	</scm>
 	<issueManagement>
