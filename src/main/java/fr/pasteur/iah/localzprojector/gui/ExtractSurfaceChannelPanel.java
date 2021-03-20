@@ -94,7 +94,7 @@ public class ExtractSurfaceChannelPanel extends JPanel
 		add( new JLabel( "DeltaZ:" ), c );
 
 		c.gridx = 1;
-		this.spinnerModelDeltaZ = new SpinnerNumberModel( deltaZ, -nZSlices, nZSlices, 1 );
+		this.spinnerModelDeltaZ = new SpinnerNumberModel( deltaZ, 0, nZSlices, 1 );
 		add( new JSpinner( spinnerModelDeltaZ ), c );
 
 		/*

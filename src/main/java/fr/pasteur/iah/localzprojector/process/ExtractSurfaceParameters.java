@@ -211,7 +211,7 @@ public class ExtractSurfaceParameters
 		 */
 		public Builder deltaZ( final int channel, final int deltaZ )
 		{
-			deltaZs.put( Integer.valueOf( channel ), Integer.valueOf( deltaZ ) );
+			deltaZs.put( Integer.valueOf( channel ), Integer.valueOf( Math.abs( deltaZ ) ) );
 			return this;
 		}
 
