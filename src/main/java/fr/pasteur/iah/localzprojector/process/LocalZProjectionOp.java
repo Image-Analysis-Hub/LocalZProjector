@@ -42,12 +42,6 @@ import net.imglib2.view.Views;
 public class LocalZProjectionOp< T extends RealType< T > & NativeType< T > > extends AbstractUnaryFunctionOp< Dataset, Dataset > implements Cancelable
 {
 
-	/**
-	 * If true, the projection will be updated live as it incorporates pixels
-	 * from various Zs. This slows down a bit the projection.
-	 */
-	private static final boolean SHOW_LIVE_Z_UPDATE = false;
-
 	@Parameter( type = ItemIO.INPUT )
 	protected ReferenceSurfaceParameters referenceSurfaceParams;
 
@@ -183,45 +177,8 @@ public class LocalZProjectionOp< T extends RealType< T > & NativeType< T > > ext
 		 * Show output?
 		 */
 
-		final ImageDisplay referenceSurfaceDisplay;
-		final ImageDisplay projectionDisplay;
-		if ( showOutputDuringCalculation )
-		{
-			projectionDisplay = ( ImageDisplay ) displayService.createDisplay( output );
-
-			// Try to see if we can force display as composite.
-			output.setCompositeChannelCount( ( int ) output.dimension( Axes.CHANNEL ) );
-
-			// Autoscale based on source display.
-			final DatasetView dataViewProjection = ( DatasetView ) projectionDisplay.get( 0 );
-			for ( int c = 0; c < output.dimension( Axes.CHANNEL ); c++ )
-			{
-				final double min = input.getChannelMinimum( c );
-				final double max = input.getChannelMaximum( c );
-				final double range = max - min;
-				final double alpha = 0.; // display saturation.
-				output.setChannelMinimum( c, min + alpha * range );
-				output.setChannelMaximum( c, max - alpha * range );
-				dataViewProjection.setChannelRange( c, output.getChannelMinimum( c ), output.getChannelMaximum( c ) );
-			}
-			projectionDisplay.update();
-
-			if ( showReferenceSurface )
-			{
-				referenceSurfaceDisplay = ( ImageDisplay ) displayService.createDisplay( referenceSurfaces );
-				final DatasetView dataViewReference = ( DatasetView ) referenceSurfaceDisplay.get( 0 );
-				dataViewReference.setChannelRanges( 0, input.dimension( Axes.Z ) );
-			}
-			else
-			{
-				referenceSurfaceDisplay = null;
-			}
-		}
-		else
-		{
-			projectionDisplay = null;
-			referenceSurfaceDisplay = null;
-		}
+		ImageDisplay referenceSurfaceDisplay = null;
+		ImageDisplay projectionDisplay = null;
 
 		/*
 		 * Process time-point by time-point.
@@ -259,11 +216,7 @@ public class LocalZProjectionOp< T extends RealType< T > & NativeType< T > > ext
 					ImgPlus.class,
 					RandomAccessibleInterval.class,
 					extractSurfaceParams );
-			
-			if ( showOutputDuringCalculation )
-				if ( SHOW_LIVE_Z_UPDATE )
-					lop.getListeners().add( ( z ) -> projectionDisplay.update() );
-				
+
 			projectorOp = lop;
 		}
 
@@ -292,6 +245,13 @@ public class LocalZProjectionOp< T extends RealType< T > & NativeType< T > > ext
 
 			if ( showOutputDuringCalculation && showReferenceSurface )
 			{
+				if ( referenceSurfaceDisplay == null )
+				{
+					referenceSurfaceDisplay = ( ImageDisplay ) displayService.createDisplay( referenceSurfaces );
+					final DatasetView dataViewReference = ( DatasetView ) referenceSurfaceDisplay.get( 0 );
+					dataViewReference.setChannelRanges( 0, input.dimension( Axes.Z ) );
+				}
+
 				final int timeAxisIndex = referenceSurfaceDisplay.dimensionIndex( Axes.TIME );
 				if ( timeAxisIndex >= 0 )
 					referenceSurfaceDisplay.setPosition( t, timeAxisIndex );
@@ -311,6 +271,28 @@ public class LocalZProjectionOp< T extends RealType< T > & NativeType< T > > ext
 
 			if ( showOutputDuringCalculation )
 			{
+				if ( projectionDisplay == null )
+				{
+					projectionDisplay = ( ImageDisplay ) displayService.createDisplay( output );
+
+					// Try to see if we can force display as composite.
+					output.setCompositeChannelCount( ( int ) output.dimension( Axes.CHANNEL ) );
+
+					// Autoscale based on source display.
+					final DatasetView dataViewProjection = ( DatasetView ) projectionDisplay.get( 0 );
+					for ( int c = 0; c < output.dimension( Axes.CHANNEL ); c++ )
+					{
+						final double min = input.getChannelMinimum( c );
+						final double max = input.getChannelMaximum( c );
+						final double range = max - min;
+						final double alpha = 0.; // display saturation.
+						output.setChannelMinimum( c, min + alpha * range );
+						output.setChannelMaximum( c, max - alpha * range );
+						dataViewProjection.setChannelRange( c, output.getChannelMinimum( c ), output.getChannelMaximum( c ) );
+					}
+					projectionDisplay.update();
+				}
+
 				output.update();
 				final int timeAxisIndex = projectionDisplay.dimensionIndex( Axes.TIME );
 				if ( timeAxisIndex >= 0 )
