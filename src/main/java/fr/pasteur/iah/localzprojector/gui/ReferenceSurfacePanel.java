@@ -138,7 +138,8 @@ public class ReferenceSurfacePanel extends JPanel
 		 * Default and persistence.
 		 */
 
-		final int targetChannel = Math.max( 0, Math.min( nChannels - 1, prefs.getInt( ReferenceSurfaceParameters.class, TARGET_CHANNEL_PREF_NAME, 0 ) ) );
+		// Channel display is 1-based.
+		final int targetChannel = Math.max( 1, Math.min( nChannels, prefs.getInt( ReferenceSurfaceParameters.class, TARGET_CHANNEL_PREF_NAME, 1 ) ) );
 		final Method method = ReferenceSurfaceParameters.Method.values()[ prefs.getInt( ReferenceSurfaceParameters.class, METHOD_PREF_NAME, 0 ) ];
 		final int filterWindowSize = Math.max( 1, Math.min( 100, prefs.getInt( ReferenceSurfaceParameters.class, FILTER_WINDOW_SIZE_PREF_NAME, 21 ) ) );
 		final double sigma = Math.max( 0., prefs.getDouble( ReferenceSurfaceParameters.class, SIGMA_PREF_NAME, 0. ) );
@@ -156,7 +157,7 @@ public class ReferenceSurfacePanel extends JPanel
 		add( new JLabel( "Target channel:" ), c );
 
 		c.gridx = 1;
-		this.spinnerModelChannel = new SpinnerNumberModel( targetChannel, 0, nChannels - 1, 1 );
+		this.spinnerModelChannel = new SpinnerNumberModel( targetChannel, 1, nChannels, 1 ); // 1-based
 		add( new JSpinner( spinnerModelChannel ), c );
 
 		c.gridx = 0;
@@ -282,7 +283,8 @@ public class ReferenceSurfacePanel extends JPanel
 	public ReferenceSurfaceParameters getParameters()
 	{
 		return ReferenceSurfaceParameters.create()
-				.targetChannel( ( ( Number ) spinnerModelChannel.getValue() ).intValue() )
+				.targetChannel( ( ( Number ) spinnerModelChannel.getValue() ).intValue() - 1 )
+				// here channel is 0-based
 				.binning( ( ( Number ) spinnerModelBinning.getValue() ).intValue() )
 				.method( ( Method ) comboBoxMethod.getSelectedItem() )
 				.filterWindowSize( ( ( ( Number ) spinnerModelSize.getValue() ).intValue() ) )
@@ -295,7 +297,7 @@ public class ReferenceSurfacePanel extends JPanel
 
 	public void setParameters( final ReferenceSurfaceParameters params )
 	{
-		spinnerModelChannel.setValue( Integer.valueOf( params.targetChannel ) );
+		spinnerModelChannel.setValue( Integer.valueOf( params.targetChannel + 1 ) );
 		spinnerModelBinning.setValue( Integer.valueOf( params.binning ) );
 		comboBoxMethod.setSelectedItem( params.method );
 		spinnerModelSize.setValue( Integer.valueOf( params.filterWindowSize ) );

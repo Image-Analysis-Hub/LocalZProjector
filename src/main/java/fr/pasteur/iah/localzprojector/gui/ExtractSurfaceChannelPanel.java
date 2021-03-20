@@ -96,7 +96,7 @@ public class ExtractSurfaceChannelPanel extends JPanel
 		this.channel = channel;
 
 		final Font lblFont = getFont().deriveFont( getFont().getSize2D() - 2f );
-		setBorder( new TitledBorder( new LineBorder( new Color( 192, 192, 192 ), 1, true ), "Ch" + channel, TitledBorder.LEADING, TitledBorder.TOP, lblFont, null ) );
+		setBorder( new TitledBorder( new LineBorder( new Color( 192, 192, 192 ), 1, true ), "Ch" + ( channel + 1 ), TitledBorder.LEADING, TitledBorder.TOP, lblFont, null ) );
 		final GridBagLayout gridBagLayout = new GridBagLayout();
 		setLayout( gridBagLayout );
 
