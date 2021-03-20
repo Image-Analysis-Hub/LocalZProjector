@@ -29,7 +29,7 @@
 
 	<properties>
 		<package-name>fr.pasteur.iah.localzprojector</package-name>
-		<license.licenseName>bsd_v3</license.licenseName>
+		<license.licenseName>bsd_3</license.licenseName>
 		<license.copyrightOwners>IAH developers.</license.copyrightOwners>
 		<license.projectName>Image Analysis Hub support for Life Scientists.</license.projectName>
 	</properties>
