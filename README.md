@@ -116,11 +116,11 @@ It works in the same way but uses  a standard deviation filter instead of a mean
 
 It is suited to detect structure with ridges and strong edges, such as epithelia stained for their membrane (example pictured above). Because it is sensitive to contrast, it offers decent robustness against spurious structure with homogenous staining.
 
-##### Sparse max of mean
+##### Mean max on grid
 
 It works as the `Max of mean` except that the values are not calculated for all the pixels of a slice, but only on a sparse grid spaced by N/2 where N is given by the `Neighbourhood size` parameter. In between the grid corners, the height-map values are obtained *via* linear interpolation.
 
-##### Sparse max of std
+##### Std max on grid
 
 The same, but with a standard deviation filter.
 
@@ -142,7 +142,7 @@ Sets the standard deviation of the smoothing Gaussian filter to use before filte
 
 The size of the median filter used to regularise the height-map.
 
-Its size is specified in pixels. Because the median is applied on the binned image, the size needs to take the `Binning` parameter into account. For instance if the `Binning` is 4 and you need a median size of 100, just enter a value of 20.
+Its size is specified in pixels. Because the median is applied on the binned image, the size needs to take the `Binning` parameter into account. For instance if the `Binning` is 4 and you need a median size of 100, just enter a value of 25.
 
 Because of spurious structures that might appear far from the reference surface, the height-map can be locally aberrant. We use a median filter to correct for this. Use large values if you see that the resulting height-map is not smooth. 
 
