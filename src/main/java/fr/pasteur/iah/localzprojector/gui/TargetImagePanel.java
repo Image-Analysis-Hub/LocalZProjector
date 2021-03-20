@@ -32,14 +32,20 @@
  */
 package fr.pasteur.iah.localzprojector.gui;
 
+import java.awt.Desktop;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.event.MouseAdapter;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JSeparator;
 
 import fr.pasteur.iah.localzprojector.util.GuiUtil;
 import net.imagej.Dataset;
@@ -48,6 +54,14 @@ public class TargetImagePanel extends JPanel
 {
 
 	private static final long serialVersionUID = 1L;
+
+	private static final String PAPER_LINK = "https://www.biorxiv.org/content/10.1101/2021.01.15.426809v2";
+
+	private static final String PAPER_STR = "<html><a href=" + PAPER_LINK + ">Paper</a></html>";
+
+	private static final String DOC_LINK = "https://gitlab.pasteur.fr/iah-public/localzprojector/-/blob/master/README.md";
+
+	private static final String DOC_STR = "<html><a href=" + DOC_LINK + ">Documentation</a></html>";
 
 	private final JLabel labelImage;
 
@@ -74,8 +88,13 @@ public class TargetImagePanel extends JPanel
 
 		this.labelImage = new JLabel( "", JLabel.CENTER );
 		c.gridx = 2;
-		c.gridwidth = 5;
+		c.gridwidth = 3;
 		add( labelImage, c );
+
+		c.gridx = 7;
+		c.gridwidth = 2;
+		c.gridheight = 1;
+		add( new JLabel( "Links to:" ), c );
 
 		c.gridx = 0;
 		c.gridy++;
@@ -105,6 +124,51 @@ public class TargetImagePanel extends JPanel
 		c.anchor = GridBagConstraints.WEST;
 		this.labelNT = new JLabel();
 		add( labelNT, c );
+
+		c.gridx = 7;
+		final JLabel lblDoc = new JLabel( DOC_STR );
+		lblDoc.addMouseListener( new MouseAdapter()
+		{
+			@Override
+			public void mouseClicked( final java.awt.event.MouseEvent e )
+			{
+				try
+				{
+					Desktop.getDesktop().browse( new URI( DOC_LINK ) );
+				}
+				catch ( URISyntaxException | IOException ex )
+				{
+					ex.printStackTrace();
+				}
+			}
+		} );
+		add( lblDoc, c );
+
+		c.gridx = 8;
+		final JLabel lblPaper = new JLabel( PAPER_STR );
+		lblPaper.addMouseListener( new MouseAdapter()
+		{
+			@Override
+			public void mouseClicked( final java.awt.event.MouseEvent e )
+			{
+				try
+				{
+					Desktop.getDesktop().browse( new URI( PAPER_LINK ) );
+				}
+				catch ( URISyntaxException | IOException ex )
+				{
+					ex.printStackTrace();
+				}
+			}
+		} );
+		add( lblPaper, c );
+
+		c.gridy = 0;
+		c.gridx = 6;
+		c.gridwidth = 1;
+		c.gridheight = 2;
+		c.fill = GridBagConstraints.BOTH;
+		add( new JSeparator( JSeparator.VERTICAL ), c );
 
 		// Change font size - more compact.
 		final Font lblFont = getFont().deriveFont( getFont().getSize2D() - 2f );
