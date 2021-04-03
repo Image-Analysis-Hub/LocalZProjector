@@ -1,8 +1,46 @@
 ![LocalZProjectorLogo-512-text](src/main/resources/fr/pasteur/iah/localzprojector/gui/LocalZProjectorLogo-512-text.png)
 
-# Local Z projector.
+
+
+# Local Z projector documentation.
 
 Local Z Projector is an ImageJ2 plugin to perform local-Z projection of a 3D stack, possibly over time, possibly very large.
+
+**Table of content.**
+
+* [Citation.](#citation)
+* [Installation.](#installation)
+* [Aims.](#aims)
+* [Example datasets.](#example-datasets)
+  + [Dataset 1. Down-sampled *Drosophila* pupal notum image.](#dataset-1-down-sampled--drosophila--pupal-notum-image)
+  + [Dataset 2. *Drosophila* pupal notum image.](#dataset-2--drosophila--pupal-notum-image)
+  + [Dataset 3. Adult zebrafish brain image.](#dataset-3-adult-zebrafish-brain-image)
+* [Example.](#example)
+* [Getting the plugin.](#getting-the-plugin)
+* [Usage.](#usage)
+  + [The `Target image` panel.](#the--target-image--panel)
+  + [The `Height-Map` panel.](#the--height-map--panel)
+    - [How to determine parameter values?](#how-to-determine-parameter-values-)
+      * [Target channel.](#target-channel)
+      * [Binning](#binning)
+      * [Method](#method)
+        + [Max of mean.](#max-of-mean)
+        + [Max of std](#max-of-std)
+        + [Mean max on grid](#mean-max-on-grid)
+        + [Std max on grid](#std-max-on-grid)
+      * [Neighborhood size](#neighborhood-size)
+      * [Z search min & max](#z-search-min---max)
+      * [Gaussian pre-filter sigma](#gaussian-pre-filter-sigma)
+      * [Median post-filter size.](#median-post-filter-size)
+    - [The load, save and default buttons.](#the-load--save-and-default-buttons)
+  + [The `Local projection` panel.](#the--local-projection--panel)
+    - [Method.](#method)
+    - [Offset.](#offset)
+    - [DeltaZ.](#deltaz)
+  + [The `Execute` panel.](#the--execute--panel)
+* [Related work.](#related-work)
+  + [DeProj.](#deproj)
+  + [Other projection tools.](#other-projection-tools)
 
 ## Citation.
 
@@ -42,21 +80,21 @@ The height-map is then used to extract a projection from the 3D image. A fixed o
 Here are two examples available on Zenodo and that can be used to test the LocalZProjector plugin.
 Both are of images of Drosophila pupa notum, captured on a confocal microscope by Léo Valon.
 
-## Dataset 1.
+### Dataset 1. Down-sampled *Drosophila* pupal notum image.
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4449952.svg)](https://doi.org/10.5281/zenodo.4449952)
 
 This dataset  also contains the parameters to generate the reference surface and local projection, also included. The two `*.localzprojector` files can be loaded directly in the plugin to load adequate parameters.
 This is a __downsampled__ version of the dataset used to generate the figures 1, 2 and 3 in this paper, as well as the comparison in table 1. Because we downsampled it, the parameters and final image quality won't be identical that of the paper.
 
-## Dataset 2.
+### Dataset 2. *Drosophila* pupal notum image.
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4449999.svg)](https://doi.org/10.5281/zenodo.4449999)
 
 A much larger image, also of Drosophila pupa notum. Example parameters are also included.
 
 
-## Dataset 3.
+### Dataset 3. Adult zebrafish brain image.
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4629231.svg)](https://doi.org/10.5281/zenodo.4629231)
 
@@ -93,59 +131,74 @@ Its UI is a made of a simple panel:
 
 ### The `Target image` panel.
 
-It just recapitulates properties of the image that will be used as source for the projection. Click on `refresh` when you want to change the source image.
+It just recapitulates properties of the image that will be used as source for the projection. 
 
-### The `Reference surface` panel.
+### The `Height-Map` panel.
 
-This panel sets the parameters used to detect the reference surface.
+This panel sets the parameters used to detect the reference surface, or height-map.
 
-#### Target channel.
+#### How to determine parameter values?
+
+The most important parameters are:
+
+- the target channel - what channel has the information to determine the reference surface
+- the method
+- the neighborhood size
+- the median post-filter.
+
+The `default` button will reset parameters to values sensible to detect an epithelium stained for cell membranes.
+
+##### Target channel.
 
 This parameter sets in what channel is the structure to be used for reference surface detection. The index is 1-based (1 stands for the first channel).
 
-#### Binning
+##### Binning
 
-Binning sets by how much the target channel is going to be binned. High values result in massive speedup.
+Binning sets by how much the target channel is going to be binned. A value of 4 will merge 16 pixels (4x4) into 1, and shrink the size of data to process by as much. Because we take the mean of the 16 pixels when we bin, this also results in denoising the source image. High values of binning result in massive speedup.
 
-A good starting points is to take the largest value that does not completely alter the global structure of the image you want to project.
+A good starting points is to take the largest value that does not completely alter the global structure of the image you want to project. Typical starting values ranges from 4 to 8.
 
-#### Method
+##### Method
 
 Determines what filter to use for reference surface detection. Right now there are four methods:
 
-##### Max of mean.
+###### Max of mean.
 
-The best Z position is determined by looking for the maximum intensity along a Z column averaged in a NxN window of size given by the `Neighborhood size` parameter.
+The best Z position is determined by looking for the maximum intensity along a Z column averaged in a NxN window of size given by the `Neighborhood size` parameter. 
 
-##### Max of std
+This method is recommend for signals which are as homogeneous as possible along the tissue. It is as well usable in the case of very bright but fluctuating signal. We have found that it works also very well when there are no spurious structures in the source image beside the tissue image.
 
-It works in the same way but uses  a standard deviation filter instead of a mean filter.
+###### Max of std
 
-It is suited to detect structure with ridges and strong edges, such as epithelia stained for their membrane (example pictured above). Because it is sensitive to contrast, it offers decent robustness against spurious structure with homogenous staining.
+This method uses  a standard deviation (std) filter instead of a mean filter.
 
-##### Mean max on grid
+It is suited to detect structure with ridges and strong edges, such as epithelia stained for their membrane (example pictured above). Because it is sensitive to contrast, it offers decent robustness against spurious structure with homogenous staining. This method is recommended for layers which contains contrasted signals. For instance junctional signals, that bright at the junctions, but dark at the cell centers.
 
-It works as the `Max of mean` except that the values are not calculated for all the pixels of a slice, but only on a sparse grid spaced by N/2 where N is given by the `Neighborhood size` parameter. In between the grid corners, the height-map values are obtained *via* linear interpolation.
+###### Mean max on grid
 
-##### Std max on grid
+This method works as the `Max of mean` except that the values are not calculated for all the pixels of a slice, but only on a sparse grid spaced by N/2 where N is given by the `Neighborhood size` parameter. In between the grid corners, the height-map values are obtained *via* linear interpolation. This method and the following one have been designed to speed-up the calculation, as we compute filter values on sparse positions. 
 
-The same, but with a standard deviation filter.
+###### Std max on grid
 
-#### Neighborhood size
+The same, but with a standard deviation filter instead of a mean.
+
+##### Neighborhood size
 
 Sets the size of the filter configured by the `Method` parameter. The size is specified in pixels, regardless of the binning value.
 
-To start with, take values a bit larger than the structure you want to detect. For instance if you are using the `Max of std` method on an epithelium, starts with a size equal to 2 or 3 times the thickness of a membrane.
+This parameter should be chosen based on the how the tissue is imaged. It should be capped between two values. To start with, take values a bit larger than the structure you want to detect. For instance if you are using the `Max of std` method on an epithelium, starts with a size equal to 2 or 3 times the thickness of a membrane.
 
-#### Z search min & max
+##### Z search min & max
 
 Specifies values in case you want to restrict the search excluding some planes at the bottom or at the top of the stack.
 
-#### Gaussian pre-filter sigma
+Limiting the search range for Z can be beneficial to avoid taking into account (auto-) fluorescent signal coming from deep tissue and to speedup calculation. The Z limit will be applied to all time points.
+
+##### Gaussian pre-filter sigma
 
 Sets the standard deviation of the smoothing Gaussian filter to use before filtering. Only use non-zero values if your image is very noisy and you must use low values of the `Binning` parameter.
 
-#### Median post-filter size.
+##### Median post-filter size.
 
 The size of the median filter used to regularize the height-map.
 
@@ -153,11 +206,11 @@ Its size is specified in pixels. Because the median is applied on the binned ima
 
 Because of spurious structures that might appear far from the reference surface, the height-map can be locally aberrant. We use a median filter to correct for this. Use large values if you see that the resulting height-map is not smooth.
 
-#### The load and save buttons.
+#### The load, save and default buttons.
 
-The parameters you enter can be saved to a binary file and retrieved later with these two buttons.
+The parameters you enter can be saved to a JSon file (a formatted text file) and retrieved later with these two buttons. The default button resets value to sensible defaults.
 
-### The `Extract projection` panel.
+### The `Local projection` panel.
 
 This panel configures how the projection is extracted once we have the reference surface. It is made a list of box, one for each channel in the source image. Each box specifies three parameters, separately for each channel, that specifies how to generate the projection for a channel.
 
