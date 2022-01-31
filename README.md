@@ -46,11 +46,11 @@ Local Z Projector is an ImageJ2 plugin to perform local-Z projection of a 3D sta
 
 If you use this work for your Research, please cite the paper it is described in:
 
-> __DProj: A toolbox for local 2D projection and accurate morphometrics of large 3D microscopy images.__
+> __LocalZProjector and DeProj: a toolbox for local 2D projection and accurate morphometrics of large 3D microscopy images.__
 >
 > Sébastien Herbert, Léo Valon, Laure Mancini, Nicolas Dray, Paolo Caldarelli, Jérôme Gros, Elric Esposito, Spencer L. Shorte, Laure Bally-Cuif, Romain Levayer, Nathalie Aulner, Jean-Yves Tinevez
 >
-> bioRxiv 2021.01.15.426809; doi: https://doi.org/10.1101/2021.01.15.426809
+> BMC Biol 19, 136 (2021). doi: https://doi.org/10.1186/s12915-021-01037-w
 
 
 ## Installation.
